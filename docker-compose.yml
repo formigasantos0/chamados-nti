@@ -1,0 +1,43 @@
+services:
+
+  db:
+    image: postgres:17-alpine
+    container_name: chamados-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: chamados
+      POSTGRES_USER: chamados
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chamados -d chamados"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+
+    container_name: chamados-api
+    restart: unless-stopped
+
+    environment:
+      DATABASE_URL: postgresql+psycopg://chamados:${POSTGRES_PASSWORD}@db:5432/chamados
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: ${JWT_ALGORITHM}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES}
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
