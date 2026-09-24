@@ -267,32 +267,58 @@ def atualizar_chamado(
     # RESPONSÁVEL
     # --------------------------------------------------------
 
-    if dados.responsavel_id is not None:
-        responsavel = db.get(Usuario, dados.responsavel_id)
-
-        if (
-            responsavel is None
-            or not responsavel.ativo
-            or responsavel.perfil not in {"tecnico", "administrador"}
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Responsável deve ser um técnico ou administrador ativo",
-        )
-
+    if "responsavel_id" in dados.model_fields_set:
         responsavel_anterior_id = chamado.responsavel_id
 
-        if responsavel_anterior_id != responsavel.id:
-            chamado.responsavel_id = responsavel.id
+        # Remover responsável
+        if dados.responsavel_id is None:
+            if responsavel_anterior_id is not None:
+                chamado.responsavel_id = None
 
-            historicos.append(
-                HistoricoChamado(
-                    chamado_id=chamado.id,
-                    usuario_id=usuario.id,
-                    tipo="atribuicao_responsavel",
-                    descricao=f"Chamado atribuído a {responsavel.nome}.",
+                historicos.append(
+                    HistoricoChamado(
+                        chamado_id=chamado.id,
+                        usuario_id=usuario.id,
+                        tipo="remocao_responsavel",
+                        descricao="Responsável removido do chamado.",
+                    )
                 )
+
+        # Atribuir ou trocar responsável
+        else:
+            responsavel = db.get(
+                Usuario,
+                dados.responsavel_id,
             )
+
+            if (
+                responsavel is None
+                or not responsavel.ativo
+                or responsavel.perfil
+                not in {"tecnico", "administrador"}
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=(
+                        "Responsável deve ser um técnico "
+                        "ou administrador ativo"
+                    ),
+                )
+
+            if responsavel_anterior_id != responsavel.id:
+                chamado.responsavel_id = responsavel.id
+
+                historicos.append(
+                    HistoricoChamado(
+                        chamado_id=chamado.id,
+                        usuario_id=usuario.id,
+                        tipo="atribuicao_responsavel",
+                        descricao=(
+                            f"Chamado atribuído a "
+                            f"{responsavel.nome}."
+                        ),
+                    )
+                )
 
     # Salva a alteração do chamado e o histórico
     # dentro da mesma transação.
@@ -304,6 +330,7 @@ def atualizar_chamado(
         .options(
             selectinload(Chamado.solicitante),
             selectinload(Chamado.unidade),
+            selectinload(Chamado.responsavel),
         )
         .where(Chamado.id == chamado.id)
     )

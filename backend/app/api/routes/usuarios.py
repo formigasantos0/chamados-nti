@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.dependencies import get_admin_atual
+from app.api.dependencies import get_admin_atual, get_equipe_nti_atual
 from app.core.security import gerar_hash_senha
 from app.db.session import get_db
 from app.models.unidade import UnidadeOrganizacional
@@ -24,6 +24,23 @@ def listar_usuarios(
     usuarios = db.scalars(
         select(Usuario)
         .options(selectinload(Usuario.unidade))
+        .order_by(Usuario.nome)
+    ).all()
+
+    return usuarios
+
+@router.get("/equipe-nti", response_model=list[UsuarioResponse])
+def listar_equipe_nti(
+    db: Session = Depends(get_db),
+    equipe_nti: Usuario = Depends(get_equipe_nti_atual),
+):
+    usuarios = db.scalars(
+        select(Usuario)
+        .options(selectinload(Usuario.unidade))
+        .where(
+            Usuario.ativo.is_(True),
+            Usuario.perfil.in_(["tecnico", "administrador"]),
+        )
         .order_by(Usuario.nome)
     ).all()
 

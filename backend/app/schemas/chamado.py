@@ -47,6 +47,7 @@ class ChamadoResponse(BaseModel):
     atualizado_em: datetime
 
     solicitante: SolicitanteResumo
+    responsavel: SolicitanteResumo | None
     unidade: UnidadeChamadoResumo
 
     model_config = {
