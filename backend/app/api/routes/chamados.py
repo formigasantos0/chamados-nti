@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
+from app.models.categoria import Categoria
 
 from app.api.dependencies import get_equipe_nti_atual, get_usuario_atual
 from app.db.session import get_db
@@ -57,16 +59,24 @@ def criar_chamado(
             detail="Prioridade inválida",
         )
 
+    categoria = db.get(Categoria, dados.categoria_id)
+
+    if categoria is None or not categoria.ativo:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Categoria inválida ou inativa",
+        )
+
     chamado = Chamado(
-        protocolo="TEMP",
-        titulo=dados.titulo.strip(),
-        descricao=dados.descricao.strip(),
-        categoria=dados.categoria.strip(),
-        prioridade=prioridade,
-        status="aberto",
-        solicitante_id=usuario.id,
-        unidade_id=usuario.unidade_id,
-    )
+    protocolo="TEMP",
+    titulo=dados.titulo.strip(),
+    descricao=dados.descricao.strip(),
+    categoria_id=categoria.id,
+    prioridade=prioridade,
+    status="aberto",
+    solicitante_id=usuario.id,
+    unidade_id=usuario.unidade_id,
+)
 
     db.add(chamado)
     db.flush()
@@ -89,6 +99,7 @@ def criar_chamado(
         .options(
             selectinload(Chamado.solicitante),
             selectinload(Chamado.unidade),
+            selectinload(Chamado.categoria),
         )
         .where(Chamado.id == chamado.id)
     )

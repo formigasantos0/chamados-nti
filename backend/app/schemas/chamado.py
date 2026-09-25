@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class ChamadoCriar(BaseModel):
     titulo: str = Field(min_length=3, max_length=200)
     descricao: str = Field(min_length=5)
-    categoria: str = Field(min_length=2, max_length=50)
+    categoria_id: int = Field(gt=0)
     prioridade: str = "normal"
 
 
@@ -29,20 +29,27 @@ class UnidadeChamadoResumo(BaseModel):
         "from_attributes": True
     }
 
+class CategoriaChamadoResumo(BaseModel):
+    id: int
+    nome: str
+
+    model_config = {
+        "from_attributes": True
+    }
 
 class ChamadoResponse(BaseModel):
     id: int
     protocolo: str
     titulo: str
     descricao: str
-    categoria: str
+    categoria: CategoriaChamadoResumo
     prioridade: str
     status: str
 
     solicitante_id: int
     unidade_id: int
     responsavel_id: int | None
-
+    categoria_id: int
     criado_em: datetime
     atualizado_em: datetime
 

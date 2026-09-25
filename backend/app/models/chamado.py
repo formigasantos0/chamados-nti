@@ -18,7 +18,10 @@ class Chamado(Base):
     titulo: Mapped[str] = mapped_column(String(200), nullable=False)
     descricao: Mapped[str] = mapped_column(Text, nullable=False)
 
-    categoria: Mapped[str] = mapped_column(String(50), nullable=False)
+    categoria_id: Mapped[int] = mapped_column(
+    ForeignKey("categorias.id"),
+    nullable=False,
+)
 
     prioridade: Mapped[str] = mapped_column(
         String(20), default="normal", nullable=False
@@ -66,4 +69,7 @@ class Chamado(Base):
 
     unidade = relationship(
         "UnidadeOrganizacional"
+    )
+    categoria = relationship(
+    "Categoria"
     )

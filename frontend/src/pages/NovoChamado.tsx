@@ -1,32 +1,66 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { isAxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
 import api from "../services/api";
 import type { Chamado, ChamadoCriar } from "../types/chamado";
 
+interface Categoria {
+  id: number;
+  nome: string;
+  descricao: string | null;
+  ativo: boolean;
+  ordem: number;
+}
+
 function NovoChamado() {
   const navigate = useNavigate();
 
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [categoria, setCategoria] = useState("");
+  const [categoriaId, setCategoriaId] = useState("");
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [carregandoCategorias, setCarregandoCategorias] = useState(true);
+
   const [prioridade, setPrioridade] =
     useState<ChamadoCriar["prioridade"]>("normal");
 
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
 
+  useEffect(() => {
+    async function carregarCategorias() {
+      try {
+        const response = await api.get<Categoria[]>("/categorias/");
+        setCategorias(response.data);
+      } catch {
+        setErro("Não foi possível carregar as categorias.");
+      } finally {
+        setCarregandoCategorias(false);
+      }
+    }
+
+    carregarCategorias();
+  }, []);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setErro("");
+
+    const categoriaIdNumerico = Number(categoriaId);
+
+    if (!categoriaIdNumerico) {
+      setErro("Selecione uma categoria.");
+      return;
+    }
+
     setEnviando(true);
 
     const dados: ChamadoCriar = {
       titulo,
       descricao,
-      categoria,
+      categoria_id: categoriaIdNumerico,
       prioridade,
     };
 
@@ -68,19 +102,31 @@ function NovoChamado() {
 
         <div>
           <label htmlFor="categoria">Categoria</label>
-          <input
+
+          <select
             id="categoria"
-            type="text"
-            value={categoria}
-            onChange={(event) => setCategoria(event.target.value)}
-            minLength={2}
-            maxLength={50}
+            value={categoriaId}
+            onChange={(event) => setCategoriaId(event.target.value)}
+            disabled={carregandoCategorias}
             required
-          />
+          >
+            <option value="">
+              {carregandoCategorias
+                ? "Carregando categorias..."
+                : "Selecione uma categoria"}
+            </option>
+
+            {categorias.map((categoria) => (
+              <option key={categoria.id} value={categoria.id}>
+                {categoria.nome}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
           <label htmlFor="prioridade">Prioridade</label>
+
           <select
             id="prioridade"
             value={prioridade}
@@ -99,6 +145,7 @@ function NovoChamado() {
 
         <div>
           <label htmlFor="descricao">Descrição</label>
+
           <textarea
             id="descricao"
             value={descricao}
@@ -111,7 +158,10 @@ function NovoChamado() {
 
         {erro && <p role="alert">{erro}</p>}
 
-        <button type="submit" disabled={enviando}>
+        <button
+          type="submit"
+          disabled={enviando || carregandoCategorias}
+        >
           {enviando ? "Abrindo chamado..." : "Abrir chamado"}
         </button>
       </form>

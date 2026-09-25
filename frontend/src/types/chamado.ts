@@ -15,7 +15,13 @@ export interface Chamado {
   protocolo: string;
   titulo: string;
   descricao: string;
-  categoria: string;
+  categoria: {
+  id: number;
+  nome: string;
+ };
+
+categoria_id: number;
+
   prioridade: string;
   status: string;
   solicitante_id: number;
@@ -32,7 +38,7 @@ export interface Chamado {
 export interface ChamadoCriar {
   titulo: string;
   descricao: string;
-  categoria: string;
+  categoria_id: number;
   prioridade: "baixa" | "normal" | "alta" | "urgente";
 }
 

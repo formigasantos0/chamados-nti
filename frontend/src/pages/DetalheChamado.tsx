@@ -400,7 +400,7 @@ async function abrirAnexo(anexoId: number) {
         )}
 
         <p>
-          <strong>Categoria:</strong> {chamado.categoria}
+          <strong>Categoria:</strong> {chamado.categoria.nome}
         </p>
 
         <p>

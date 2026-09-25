@@ -83,7 +83,7 @@ function MeusChamados() {
                   </Link>
                 </td>
                 <td>{chamado.titulo}</td>
-                <td>{chamado.categoria}</td>
+                <td>{chamado.categoria.nome}</td>
                 <td>{formatarTexto(chamado.prioridade)}</td>
                 <td>{formatarTexto(chamado.status)}</td>
                 <td>{formatarData(chamado.criado_em)}</td>

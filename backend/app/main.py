@@ -6,6 +6,7 @@ from app.api.routes.usuarios import router as usuarios_router
 from app.api.routes.chamados import router as chamados_router
 from app.api.routes.anexos import router as anexos_router
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.routes.categorias import router as categorias_router
 
 app = FastAPI(
     title="Chamados NTI API",
@@ -29,6 +30,7 @@ app.include_router(unidades_router)
 app.include_router(usuarios_router)
 app.include_router(chamados_router)
 app.include_router(anexos_router)
+app.include_router(categorias_router)
 
 @app.get("/")
 def root():

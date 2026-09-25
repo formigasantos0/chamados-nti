@@ -12,6 +12,7 @@ import MeusChamados from "./pages/MeusChamados";
 import NovoChamado from "./pages/NovoChamado";
 import PainelNTI from "./pages/PainelNTI";
 import DetalheChamado from "./pages/DetalheChamado";
+import AdministrarCategorias from "./pages/AdministrarCategorias";
 
 function App() {
   return (
@@ -51,6 +52,21 @@ function App() {
           </Route>
         </Route>
 
+        <Route
+          element={
+            <ProtectedRoute
+              perfisPermitidos={["administrador"]}
+            />
+          }
+        >
+          <Route element={<AppLayout />}>
+            <Route
+              path="/admin/categorias"
+              element={<AdministrarCategorias />}
+            />
+          </Route>
+        </Route>
+        
         <Route
           path="*"
           element={<Navigate to="/login" replace />}
