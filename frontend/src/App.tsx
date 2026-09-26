@@ -14,6 +14,7 @@ import NovoChamado from "./pages/NovoChamado";
 import PainelNTI from "./pages/PainelNTI";
 import DetalheChamado from "./pages/DetalheChamado";
 import AdministrarCategorias from "./pages/AdministrarCategorias";
+import AdministrarUsuarios from "./pages/AdministrarUsuarios";
 
 function App() {
   return (
@@ -66,6 +67,11 @@ function App() {
               element={<AdministrarCategorias />}
             />
           </Route>
+
+          <Route
+            path="/admin/usuarios"
+            element={<AdministrarUsuarios />}
+          />
         </Route>
         
         <Route

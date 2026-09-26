@@ -8,6 +8,23 @@ class UsuarioCriar(BaseModel):
     unidade_id: int
     perfil: str = "usuario"
 
+class UsuarioAtualizar(BaseModel):
+    nome: str | None = Field(
+        default=None,
+        min_length=3,
+        max_length=150,
+    )
+    email: EmailStr | None = None
+    unidade_id: int | None = None
+    perfil: str | None = None
+    ativo: bool | None = None
+
+
+class UsuarioRedefinirSenha(BaseModel):
+    senha: str = Field(
+        min_length=8,
+        max_length=128,
+    )
 
 class UnidadeResumo(BaseModel):
     id: int

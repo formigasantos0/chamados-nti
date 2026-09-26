@@ -15,6 +15,9 @@ function AppLayout() {
     usuario?.perfil === "tecnico" ||
     usuario?.perfil === "administrador";
 
+  const administrador =
+  usuario?.perfil === "administrador";
+
   return (
     <div>
       <header>
@@ -27,6 +30,13 @@ function AppLayout() {
 
             {equipeNTI && (
               <Link to="/nti">Painel NTI</Link>
+            )}
+
+            {administrador && (
+            <>
+              <Link to="/admin/usuarios">Usuários</Link>
+              <Link to="/admin/categorias">Categorias</Link>
+            </>
             )}
           </nav>
         </div>
