@@ -4,6 +4,9 @@ from app.models.chamado import Chamado
 from app.models.historico import HistoricoChamado
 from app.models.anexo import Anexo
 from app.models.categoria import Categoria
+from app.models.politica_sla import PoliticaSLA
+from app.models.configuracao_sla import ConfiguracaoSLA
+from app.models.feriado import Feriado
 
 __all__ = [
     "UnidadeOrganizacional",
@@ -12,4 +15,7 @@ __all__ = [
     "HistoricoChamado",
     "Anexo",
     "Categoria",
+    "PoliticaSLA",
+    "ConfiguracaoSLA",
+    "Feriado",
 ]

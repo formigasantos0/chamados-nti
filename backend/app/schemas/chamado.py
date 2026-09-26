@@ -1,13 +1,23 @@
 from datetime import datetime
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
+
+PrioridadeChamado = Literal[
+    "baixa",
+    "normal",
+    "alta",
+    "urgente",
+]
 
 
 class ChamadoCriar(BaseModel):
     titulo: str = Field(min_length=3, max_length=200)
     descricao: str = Field(min_length=5)
     categoria_id: int = Field(gt=0)
-    prioridade: str = "normal"
+    prioridade: PrioridadeChamado = "normal"
 
 
 class SolicitanteResumo(BaseModel):
@@ -53,6 +63,10 @@ class ChamadoResponse(BaseModel):
     criado_em: datetime
     atualizado_em: datetime
 
+    primeiro_atendimento_em: datetime | None
+    resolvido_em: datetime | None
+    fechado_em: datetime | None
+
     solicitante: SolicitanteResumo
     responsavel: SolicitanteResumo | None
     unidade: UnidadeChamadoResumo
@@ -63,7 +77,7 @@ class ChamadoResponse(BaseModel):
 
 class ChamadoAtualizar(BaseModel):
     status: str | None = None
-    prioridade: str | None = None
+    prioridade: PrioridadeChamado | None = None
     responsavel_id: int | None = None
 
 class MensagemCriar(BaseModel):

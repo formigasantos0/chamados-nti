@@ -57,6 +57,21 @@ class Chamado(Base):
         nullable=False,
     )
 
+    primeiro_atendimento_em: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    resolvido_em: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    fechado_em: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
     solicitante = relationship(
         "Usuario",
         foreign_keys=[solicitante_id]

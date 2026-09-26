@@ -223,7 +223,24 @@ def atualizar_chamado(
         status_anterior = chamado.status
 
         if status_anterior != novo_status:
+            agora = datetime.now(timezone.utc)
+
             chamado.status = novo_status
+
+            # Registra o primeiro atendimento apenas uma vez.
+            if (
+                novo_status == "em_atendimento"
+                and chamado.primeiro_atendimento_em is None
+            ):
+                chamado.primeiro_atendimento_em = agora
+
+            # Registra quando o chamado é resolvido.
+            if novo_status == "resolvido":
+                chamado.resolvido_em = agora
+
+            # Registra quando o chamado é fechado.
+            if novo_status == "fechado":
+                chamado.fechado_em = agora
 
             historicos.append(
                 HistoricoChamado(
