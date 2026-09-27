@@ -16,7 +16,7 @@ function AppLayout() {
     usuario?.perfil === "administrador";
 
   const administrador =
-  usuario?.perfil === "administrador";
+    usuario?.perfil === "administrador";
 
   return (
     <div>
@@ -33,10 +33,11 @@ function AppLayout() {
             )}
 
             {administrador && (
-            <>
-              <Link to="/admin/usuarios">Usuários</Link>
-              <Link to="/admin/categorias">Categorias</Link>
-            </>
+              <>
+                <Link to="/admin/usuarios">Usuários</Link>
+                <Link to="/admin/unidades">Unidades</Link>
+                <Link to="/admin/categorias">Categorias</Link>
+              </>
             )}
           </nav>
         </div>

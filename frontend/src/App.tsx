@@ -15,6 +15,7 @@ import PainelNTI from "./pages/PainelNTI";
 import DetalheChamado from "./pages/DetalheChamado";
 import AdministrarCategorias from "./pages/AdministrarCategorias";
 import AdministrarUsuarios from "./pages/AdministrarUsuarios";
+import AdministrarUnidades from "./pages/AdministrarUnidades";
 
 function App() {
   return (
@@ -54,7 +55,7 @@ function App() {
           </Route>
         </Route>
 
-        <Route
+       <Route
           element={
             <ProtectedRoute
               perfisPermitidos={["administrador"]}
@@ -63,15 +64,20 @@ function App() {
         >
           <Route element={<AppLayout />}>
             <Route
+              path="/admin/usuarios"
+              element={<AdministrarUsuarios />}
+            />
+
+            <Route
+              path="/admin/unidades"
+              element={<AdministrarUnidades />}
+            />
+
+            <Route
               path="/admin/categorias"
               element={<AdministrarCategorias />}
             />
           </Route>
-
-          <Route
-            path="/admin/usuarios"
-            element={<AdministrarUsuarios />}
-          />
         </Route>
         
         <Route
