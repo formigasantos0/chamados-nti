@@ -1,4 +1,8 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import {
+  Link,
+  Outlet,
+  useNavigate,
+} from "react-router-dom";
 
 import { useAuth } from "../contexts/AuthContext";
 
@@ -25,18 +29,37 @@ function AppLayout() {
           <strong>Chamados NTI</strong>
 
           <nav>
-            <Link to="/chamados">Meus Chamados</Link>
-            <Link to="/chamados/novo">Novo Chamado</Link>
+            <Link to="/chamados">
+              Meus Chamados
+            </Link>
+
+            <Link to="/chamados/novo">
+              Novo Chamado
+            </Link>
 
             {equipeNTI && (
-              <Link to="/nti">Painel NTI</Link>
+              <Link to="/nti">
+                Painel NTI
+              </Link>
             )}
 
             {administrador && (
               <>
-                <Link to="/admin/usuarios">Usuários</Link>
-                <Link to="/admin/unidades">Unidades</Link>
-                <Link to="/admin/categorias">Categorias</Link>
+                <Link to="/admin/usuarios">
+                  Usuários
+                </Link>
+
+                <Link to="/admin/unidades">
+                  Unidades
+                </Link>
+
+                <Link to="/admin/categorias">
+                  Categorias
+                </Link>
+
+                <Link to="/admin/sla">
+                  SLA
+                </Link>
               </>
             )}
           </nav>
@@ -44,7 +67,11 @@ function AppLayout() {
 
         <div>
           <span>{usuario?.nome}</span>
-          <button type="button" onClick={handleLogout}>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+          >
             Sair
           </button>
         </div>

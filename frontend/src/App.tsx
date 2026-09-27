@@ -1,4 +1,5 @@
 import "./App.css";
+
 import {
   BrowserRouter,
   Navigate,
@@ -8,6 +9,7 @@ import {
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./layouts/AppLayout";
+
 import Login from "./pages/Login";
 import MeusChamados from "./pages/MeusChamados";
 import NovoChamado from "./pages/NovoChamado";
@@ -16,26 +18,37 @@ import DetalheChamado from "./pages/DetalheChamado";
 import AdministrarCategorias from "./pages/AdministrarCategorias";
 import AdministrarUsuarios from "./pages/AdministrarUsuarios";
 import AdministrarUnidades from "./pages/AdministrarUnidades";
+import AdministrarSLA from "./pages/AdministrarSLA";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Rota inicial */}
         <Route
           path="/"
           element={<Navigate to="/login" replace />}
         />
 
-        <Route path="/login" element={<Login />} />
+        {/* Rota pública */}
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
+        {/* Usuários autenticados */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
-            <Route path="/chamados" element={<MeusChamados />} />
+            <Route
+              path="/chamados"
+              element={<MeusChamados />}
+            />
 
             <Route
               path="/chamados/novo"
               element={<NovoChamado />}
             />
+
             <Route
               path="/chamados/:chamadoId"
               element={<DetalheChamado />}
@@ -43,19 +56,27 @@ function App() {
           </Route>
         </Route>
 
+        {/* Equipe NTI */}
         <Route
           element={
             <ProtectedRoute
-              perfisPermitidos={["tecnico", "administrador"]}
+              perfisPermitidos={[
+                "tecnico",
+                "administrador",
+              ]}
             />
           }
         >
           <Route element={<AppLayout />}>
-            <Route path="/nti" element={<PainelNTI />} />
+            <Route
+              path="/nti"
+              element={<PainelNTI />}
+            />
           </Route>
         </Route>
 
-       <Route
+        {/* Administração */}
+        <Route
           element={
             <ProtectedRoute
               perfisPermitidos={["administrador"]}
@@ -77,9 +98,15 @@ function App() {
               path="/admin/categorias"
               element={<AdministrarCategorias />}
             />
+
+            <Route
+              path="/admin/sla"
+              element={<AdministrarSLA />}
+            />
           </Route>
         </Route>
-        
+
+        {/* Rota inexistente */}
         <Route
           path="*"
           element={<Navigate to="/login" replace />}

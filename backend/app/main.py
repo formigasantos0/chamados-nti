@@ -8,6 +8,7 @@ from app.api.routes.anexos import router as anexos_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes.categorias import router as categorias_router
 from app.api.routes.dashboard import router as dashboard_router
+from app.api.routes.sla import router as sla_router
 
 app = FastAPI(
     title="Chamados NTI API",
@@ -33,6 +34,7 @@ app.include_router(chamados_router)
 app.include_router(anexos_router)
 app.include_router(categorias_router)
 app.include_router(dashboard_router)
+app.include_router(sla_router)
 
 @app.get("/")
 def root():
