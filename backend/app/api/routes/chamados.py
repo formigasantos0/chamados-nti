@@ -212,7 +212,27 @@ def atualizar_chamado(
             "fechado",
         }
 
+        transicoes_permitidas = {
+            "aberto": {
+                "em_atendimento",
+            },
+            "em_atendimento": {
+                "aguardando_usuario",
+                "resolvido",
+            },
+            "aguardando_usuario": {
+                "em_atendimento",
+                "resolvido",
+            },
+            "resolvido": {
+                "em_atendimento",
+                "fechado",
+            },
+            "fechado": set(),
+        }
+
         novo_status = dados.status.lower()
+        status_anterior = chamado.status
 
         if novo_status not in status_validos:
             raise HTTPException(
@@ -220,25 +240,45 @@ def atualizar_chamado(
                 detail="Status inválido",
             )
 
-        status_anterior = chamado.status
+        if status_anterior not in status_validos:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="O chamado possui um status atual inválido",
+            )
 
         if status_anterior != novo_status:
+            if novo_status not in transicoes_permitidas[status_anterior]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=(
+                        f"Transição de status não permitida: "
+                        f"'{status_anterior}' → '{novo_status}'"
+                    ),
+                )
+
             agora = datetime.now(timezone.utc)
 
             chamado.status = novo_status
 
-            # Registra o primeiro atendimento apenas uma vez.
+            # Primeiro atendimento é registrado somente uma vez.
             if (
                 novo_status == "em_atendimento"
                 and chamado.primeiro_atendimento_em is None
             ):
                 chamado.primeiro_atendimento_em = agora
 
-            # Registra quando o chamado é resolvido.
+            # Ao resolver, registra o momento da resolução.
             if novo_status == "resolvido":
                 chamado.resolvido_em = agora
 
-            # Registra quando o chamado é fechado.
+            # Ao reabrir um chamado resolvido, ele deixa de estar resolvido.
+            if (
+                status_anterior == "resolvido"
+                and novo_status == "em_atendimento"
+            ):
+                chamado.resolvido_em = None
+
+            # Ao fechar, registra o momento do fechamento.
             if novo_status == "fechado":
                 chamado.fechado_em = agora
 

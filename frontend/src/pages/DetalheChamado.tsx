@@ -29,6 +29,33 @@ function formatarTexto(valor: string) {
     .replace(/\b\w/g, (letra) => letra.toUpperCase());
 }
 
+const transicoesStatus: Record<string, string[]> = {
+  aberto: [
+    "em_atendimento",
+  ],
+  em_atendimento: [
+    "aguardando_usuario",
+    "resolvido",
+  ],
+  aguardando_usuario: [
+    "em_atendimento",
+    "resolvido",
+  ],
+  resolvido: [
+    "em_atendimento",
+    "fechado",
+  ],
+  fechado: [],
+};
+
+const nomesStatus: Record<string, string> = {
+  aberto: "Aberto",
+  em_atendimento: "Em atendimento",
+  aguardando_usuario: "Aguardando usuário",
+  resolvido: "Resolvido",
+  fechado: "Fechado",
+};
+
 function formatarTamanho(bytes: number) {
   if (bytes < 1024) {
     return `${bytes} B`;
@@ -323,20 +350,35 @@ async function abrirAnexo(anexoId: number) {
           <strong>Status:</strong>{" "}
 
            {equipeNTI ? (
-             <select
+              <select
                 value={chamado.status}
-                disabled={atualizando}
+                disabled={
+                  atualizando ||
+                  transicoesStatus[chamado.status]?.length === 0
+                }
                 onChange={(event) =>
-                  atualizarChamado("status", event.target.value)
+                  atualizarChamado(
+                    "status",
+                    event.target.value,
+                  )
                 }
               >
-                <option value="aberto">Aberto</option>
-                <option value="em_atendimento">Em atendimento</option>
-                <option value="aguardando_usuario">
-                   Aguardando usuário
+                <option value={chamado.status}>
+                  {nomesStatus[chamado.status] ??
+                    formatarTexto(chamado.status)}
                 </option>
-                <option value="resolvido">Resolvido</option>
-                <option value="fechado">Fechado</option>
+
+                {transicoesStatus[chamado.status]?.map(
+                  (status) => (
+                    <option
+                      key={status}
+                      value={status}
+                    >
+                      {nomesStatus[status] ??
+                        formatarTexto(status)}
+                    </option>
+                  ),
+                )}
               </select>
             ) : (
               formatarTexto(chamado.status)
