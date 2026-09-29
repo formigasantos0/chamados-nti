@@ -82,6 +82,19 @@ function PainelNTI() {
   const [sla, setSla] = useState<DashboardSLA | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroPrioridade, setFiltroPrioridade] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("");
+  const [filtroResponsavel, setFiltroResponsavel] = useState("");
+  const [filtroUnidade, setFiltroUnidade] = useState("");
+  const [somenteSemResponsavel, setSomenteSemResponsavel] =
+  useState(false);
+
+  const [pesquisa, setPesquisa] = useState("");
+  const [ordenacao, setOrdenacao] = useState("mais_recentes");
+
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const ITENS_POR_PAGINA = 5;
 
   useEffect(() => {
     async function carregarPainel() {
@@ -111,6 +124,152 @@ function PainelNTI() {
 
     carregarPainel();
   }, []);
+  const categorias = Array.from(
+  new Map(
+    chamados.map((chamado) => [
+      chamado.categoria.id,
+      chamado.categoria,
+    ]),
+  ).values(),
+).sort((a, b) => a.nome.localeCompare(b.nome));
+
+const responsaveis = Array.from(
+  new Map(
+    chamados
+      .filter((chamado) => chamado.responsavel)
+      .map((chamado) => [
+        chamado.responsavel!.id,
+        chamado.responsavel!,
+      ]),
+  ).values(),
+).sort((a, b) => a.nome.localeCompare(b.nome));
+
+const unidades = Array.from(
+  new Map(
+    chamados.map((chamado) => [
+      chamado.unidade.id,
+      chamado.unidade,
+    ]),
+  ).values(),
+).sort((a, b) => a.nome.localeCompare(b.nome));
+
+const chamadosFiltrados = chamados.filter((chamado) => {
+  const termoPesquisa = pesquisa.trim().toLowerCase();
+
+  if (termoPesquisa) {
+    const correspondePesquisa =
+      chamado.protocolo.toLowerCase().includes(termoPesquisa) ||
+      chamado.titulo.toLowerCase().includes(termoPesquisa) ||
+      chamado.solicitante.nome.toLowerCase().includes(termoPesquisa);
+
+    if (!correspondePesquisa) {
+      return false;
+    }
+  }
+  if (
+    filtroStatus &&
+    chamado.status !== filtroStatus
+  ) {
+    return false;
+  }
+
+  if (
+    filtroPrioridade &&
+    chamado.prioridade !== filtroPrioridade
+  ) {
+    return false;
+  }
+
+  if (
+    filtroCategoria &&
+    chamado.categoria.id !== Number(filtroCategoria)
+  ) {
+    return false;
+  }
+
+  if (
+    filtroResponsavel &&
+    chamado.responsavel_id !== Number(filtroResponsavel)
+  ) {
+    return false;
+  }
+
+  if (
+    filtroUnidade &&
+    chamado.unidade.id !== Number(filtroUnidade)
+  ) {
+    return false;
+  }
+
+  if (
+    somenteSemResponsavel &&
+    chamado.responsavel_id !== null
+  ) {
+    return false;
+  }
+
+  return true;
+});
+
+const chamadosOrdenados = [...chamadosFiltrados].sort((a, b) => {
+  switch (ordenacao) {
+    case "mais_antigos":
+      return (
+        new Date(a.criado_em).getTime() -
+        new Date(b.criado_em).getTime()
+      );
+
+    case "prioridade":
+      const pesoPrioridade: Record<string, number> = {
+        urgente: 4,
+        alta: 3,
+        normal: 2,
+        baixa: 1,
+      };
+
+      return (
+        (pesoPrioridade[b.prioridade] ?? 0) -
+        (pesoPrioridade[a.prioridade] ?? 0)
+      );
+
+    case "mais_recentes":
+    default:
+      return (
+        new Date(b.criado_em).getTime() -
+        new Date(a.criado_em).getTime()
+      );
+  }
+});
+
+const totalPaginas = Math.max(
+  1,
+  Math.ceil(chamadosOrdenados.length / ITENS_POR_PAGINA),
+);
+
+const inicioPagina =
+  (paginaAtual - 1) * ITENS_POR_PAGINA;
+
+const chamadosPaginados = chamadosOrdenados.slice(
+  inicioPagina,
+  inicioPagina + ITENS_POR_PAGINA,
+);
+
+useEffect(() => {
+  if (paginaAtual > totalPaginas) {
+    setPaginaAtual(totalPaginas);
+  }
+}, [paginaAtual, totalPaginas]);
+
+function limparFiltros() {
+  setFiltroStatus("");
+  setFiltroPrioridade("");
+  setFiltroCategoria("");
+  setFiltroResponsavel("");
+  setFiltroUnidade("");
+  setSomenteSemResponsavel(false);
+  setPesquisa("");
+}
+
 
   if (carregando) {
     return <p>Carregando painel NTI...</p>;
@@ -135,6 +294,146 @@ function PainelNTI() {
           <div>
             <h2>Visão geral</h2>
             <p>Acompanhamento atual dos chamados.</p>
+          </div>
+
+          <div className="painel-filtros">
+            <input
+              type="search"
+              value={pesquisa}
+              placeholder="Buscar protocolo, assunto ou solicitante..."
+              aria-label="Pesquisar chamados"
+              onChange={(event) =>
+                setPesquisa(event.target.value)
+              }
+            />
+            <select
+              value={filtroStatus}
+              onChange={(event) =>
+                setFiltroStatus(event.target.value)
+              }
+            >
+              <option value="">Todos os status</option>
+              <option value="aberto">Aberto</option>
+              <option value="em_atendimento">Em atendimento</option>
+              <option value="aguardando_usuario">
+                Aguardando usuário
+              </option>
+              <option value="resolvido">Resolvido</option>
+              <option value="fechado">Fechado</option>
+            </select>
+
+            <select
+              value={filtroPrioridade}
+              onChange={(event) =>
+                setFiltroPrioridade(event.target.value)
+              }
+            >
+              <option value="">Todas as prioridades</option>
+              <option value="baixa">Baixa</option>
+              <option value="normal">Normal</option>
+              <option value="alta">Alta</option>
+              <option value="urgente">Urgente</option>
+            </select>
+
+            <select
+              value={filtroCategoria}
+              onChange={(event) =>
+                setFiltroCategoria(event.target.value)
+              }
+            >
+              <option value="">Todas as categorias</option>
+
+              {categorias.map((categoria) => (
+                <option
+                  key={categoria.id}
+                  value={categoria.id}
+                >
+                  {categoria.nome}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={filtroResponsavel}
+              onChange={(event) => {
+                setFiltroResponsavel(event.target.value);
+
+                if (event.target.value) {
+                  setSomenteSemResponsavel(false);
+                }
+              }}
+            >
+              <option value="">Todos os responsáveis</option>
+
+              {responsaveis.map((responsavel) => (
+                <option
+                  key={responsavel.id}
+                  value={responsavel.id}
+                >
+                  {responsavel.nome}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={filtroUnidade}
+              onChange={(event) =>
+                setFiltroUnidade(event.target.value)
+              }
+            >
+              <option value="">Todas as unidades</option>
+
+              {unidades.map((unidade) => (
+                <option
+                  key={unidade.id}
+                  value={unidade.id}
+                >
+                  {unidade.sigla} — {unidade.nome}
+                </option>
+              ))}
+            </select>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={somenteSemResponsavel}
+                onChange={(event) => {
+                  setSomenteSemResponsavel(
+                    event.target.checked,
+                  );
+
+                  if (event.target.checked) {
+                    setFiltroResponsavel("");
+                  }
+                }}
+              />
+
+              Sem responsável
+            </label>
+            <select
+              value={ordenacao}
+              onChange={(event) =>
+                setOrdenacao(event.target.value)
+              }
+            >
+              <option value="mais_recentes">
+                Mais recentes primeiro
+              </option>
+
+              <option value="mais_antigos">
+                Mais antigos primeiro
+              </option>
+
+              <option value="prioridade">
+                Maior prioridade primeiro
+              </option>
+            </select>
+            <button
+              type="button"
+              onClick={limparFiltros}
+            >
+              Limpar filtros
+            </button>
           </div>
 
           <span className="total-chamados">
@@ -428,56 +727,116 @@ function PainelNTI() {
           <h2>Chamados</h2>
           <p>Lista completa dos chamados registrados.</p>
         </div>
+        <span className="total-chamados">
+          {chamadosFiltrados.length} de {chamados.length}
+        </span>
       </div>
 
-      {chamados.length === 0 ? (
-        <div className="painel-card">
-          <p>Nenhum chamado encontrado.</p>
-        </div>
-      ) : (
-        <div className="tabela-container">
-          <table className="chamados-tabela">
-            <thead>
-              <tr>
-                <th>Protocolo</th>
-                <th>Assunto</th>
-                <th>Solicitante</th>
-                <th>Unidade</th>
-                <th>Prioridade</th>
-                <th>Status</th>
-                <th>Aberto em</th>
-              </tr>
-            </thead>
+      {chamadosFiltrados.length === 0 ? (
+  <div className="painel-card">
+    <p>Nenhum chamado encontrado.</p>
+  </div>
+) : (
+  <>
+    <div className="tabela-container">
+      <table className="chamados-tabela">
+        <thead>
+          <tr>
+            <th>Protocolo</th>
+            <th>Assunto</th>
+            <th>Solicitante</th>
+            <th>Unidade</th>
+            <th>Prioridade</th>
+            <th>Status</th>
+            <th>Responsável</th>
+            <th>SLA</th>
+            <th>Aberto em</th>
+          </tr>
+        </thead>
 
-            <tbody>
-              {chamados.map((chamado) => (
-                <tr key={chamado.id}>
-                  <td>
-                    <Link to={`/chamados/${chamado.id}`}>
-                      {chamado.protocolo}
-                    </Link>
-                  </td>
+        <tbody>
+          {chamadosPaginados.map((chamado) => (
+            <tr key={chamado.id}>
+              <td>
+                <Link to={`/chamados/${chamado.id}`}>
+                  {chamado.protocolo}
+                </Link>
+              </td>
 
-                  <td>{chamado.titulo}</td>
-                  <td>{chamado.solicitante.nome}</td>
-                  <td>{chamado.unidade.sigla}</td>
+              <td>{chamado.titulo}</td>
+              <td>{chamado.solicitante.nome}</td>
+              <td>{chamado.unidade.sigla}</td>
 
-                  <td>
-                    {formatarTexto(chamado.prioridade)}
-                  </td>
+              <td>
+                <span
+                  className={`badge badge-prioridade-${chamado.prioridade}`}
+                >
+                  {formatarTexto(chamado.prioridade)}
+                </span>
+              </td>
 
-                  <td>
-                    {formatarTexto(chamado.status)}
-                  </td>
+              <td>
+                <span
+                  className={`badge badge-status-${chamado.status}`}
+                >
+                  {formatarTexto(chamado.status)}
+                </span>
+              </td>
 
-                  <td>{formatarData(chamado.criado_em)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
+              <td>
+                {chamado.responsavel?.nome ?? "Não atribuído"}
+              </td>
+              <td>
+                {chamado.sla ? (
+                  <span
+                    className={`badge badge-sla-${chamado.sla.resolucao.situacao}`}
+                    title={`SLA consumido: ${chamado.sla.resolucao.percentual_consumido}%`}
+                  >
+                    {formatarTexto(
+                      chamado.sla.resolucao.situacao,
+                    )}
+                  </span>
+                ) : (
+                  "—"
+                )}
+              </td>
+              <td>
+                {formatarData(chamado.criado_em)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <div className="paginacao">
+      <button
+        type="button"
+        disabled={paginaAtual === 1}
+        onClick={() =>
+          setPaginaAtual((pagina) => pagina - 1)
+        }
+      >
+        Anterior
+      </button>
+
+      <span>
+        Página {paginaAtual} de {totalPaginas}
+      </span>
+
+      <button
+        type="button"
+        disabled={paginaAtual === totalPaginas}
+        onClick={() =>
+          setPaginaAtual((pagina) => pagina + 1)
+        }
+      >
+        Próxima
+      </button>
+    </div>
+  </>
+)}
+  </section>
   </main>
 );
 }

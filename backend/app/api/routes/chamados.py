@@ -6,6 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 from app.models.categoria import Categoria
 
+from app.services.sla import calcular_sla_chamado
+
 from app.api.dependencies import get_equipe_nti_atual, get_usuario_atual
 from app.db.session import get_db
 from app.models.chamado import Chamado
@@ -138,7 +140,36 @@ def listar_chamados(
 
     chamados = db.scalars(consulta).all()
 
-    return chamados
+    resultado = []
+
+    for chamado in chamados:
+        dados = ChamadoResponse.model_validate(chamado)
+
+        sla_calculado = calcular_sla_chamado(
+            db=db,
+            chamado=chamado,
+        )
+
+        dados.sla = {
+            "primeiro_atendimento": {
+                "situacao": sla_calculado["primeiro_atendimento"]["situacao"],
+                "percentual_consumido": sla_calculado["primeiro_atendimento"][
+                    "percentual_consumido"
+                ],
+                "prazo": sla_calculado["primeiro_atendimento"]["prazo"],
+            },
+            "resolucao": {
+                "situacao": sla_calculado["resolucao"]["situacao"],
+                "percentual_consumido": sla_calculado["resolucao"][
+                    "percentual_consumido"
+                ],
+                "prazo": sla_calculado["resolucao"]["prazo"],
+            },
+        }
+
+        resultado.append(dados)
+
+    return resultado
 
     # Usuário comum enxerga somente os próprios chamados.
     # Administrador enxerga todos.
@@ -157,6 +188,8 @@ def consultar_chamado(
         .options(
             selectinload(Chamado.solicitante),
             selectinload(Chamado.unidade),
+            selectinload(Chamado.categoria),
+            selectinload(Chamado.responsavel),
         )
         .where(Chamado.id == chamado_id)
     )

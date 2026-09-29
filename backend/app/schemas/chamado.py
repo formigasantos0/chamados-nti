@@ -47,6 +47,16 @@ class CategoriaChamadoResumo(BaseModel):
         "from_attributes": True
     }
 
+class SLAChamadoIndicador(BaseModel):
+    situacao: str
+    percentual_consumido: float
+    prazo: datetime
+
+
+class SLAChamadoResumo(BaseModel):
+    primeiro_atendimento: SLAChamadoIndicador
+    resolucao: SLAChamadoIndicador
+
 class ChamadoResponse(BaseModel):
     id: int
     protocolo: str
@@ -66,6 +76,7 @@ class ChamadoResponse(BaseModel):
     primeiro_atendimento_em: datetime | None
     resolvido_em: datetime | None
     fechado_em: datetime | None
+    sla: SLAChamadoResumo | None = None
 
     solicitante: SolicitanteResumo
     responsavel: SolicitanteResumo | None

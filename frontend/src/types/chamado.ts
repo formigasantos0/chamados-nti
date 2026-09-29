@@ -33,6 +33,19 @@ categoria_id: number;
 
   solicitante: SolicitanteResumo;
   unidade: UnidadeChamadoResumo;
+
+  sla?: {
+  primeiro_atendimento: {
+    situacao: string;
+    percentual_consumido: number;
+    prazo: string;
+  };
+  resolucao: {
+    situacao: string;
+    percentual_consumido: number;
+    prazo: string;
+  };
+} | null;
 }
 
 export interface ChamadoCriar {
