@@ -183,31 +183,76 @@ function AdministrarCategorias() {
 }
 
   return (
-    <section>
-      <header>
-        <h1>Administração de Categorias</h1>
+  <section className="admin-categorias">
+    <header className="pagina-cabecalho admin-pagina-cabecalho">
+      <div>
+        <span className="pagina-eyebrow">
+          Administração
+        </span>
+
+        <h1>Categorias</h1>
 
         <p>
-          Gerencie as categorias disponíveis para abertura de chamados.
+          Gerencie as categorias disponíveis para classificação
+          e abertura dos chamados.
         </p>
-      </header>
+      </div>
 
       {!exibirFormulario && (
-        <button type="button" onClick={abrirNovaCategoria}>
-          Nova categoria
+        <button
+          type="button"
+          onClick={abrirNovaCategoria}
+        >
+          + Nova categoria
         </button>
       )}
+    </header>
 
-      {exibirFormulario && (
-        <form onSubmit={handleSubmit}>
-          <h2>
-            {categoriaEmEdicao
-              ? "Editar categoria"
-              : "Nova categoria"}
-          </h2>
+    {erro && (
+      <div
+        className="form-alerta form-alerta-erro admin-alerta"
+        role="alert"
+      >
+        {erro}
+      </div>
+    )}
 
+    {mensagem && (
+      <div
+        className="form-alerta form-alerta-sucesso admin-alerta"
+        role="status"
+      >
+        {mensagem}
+      </div>
+    )}
+
+    {exibirFormulario && (
+      <form
+        className="admin-formulario form-card"
+        onSubmit={handleSubmit}
+      >
+        <div className="form-card-cabecalho">
           <div>
-            <label htmlFor="nome">Nome</label>
+            <h2>
+              {categoriaEmEdicao
+                ? "Editar categoria"
+                : "Nova categoria"}
+            </h2>
+
+            <p>
+              {categoriaEmEdicao
+                ? "Atualize as informações desta categoria."
+                : "Cadastre uma nova categoria para classificação dos chamados."}
+            </p>
+          </div>
+        </div>
+
+        <div className="admin-categoria-form-conteudo">
+          <div className="form-campo">
+            <label htmlFor="nome">
+              Nome
+              <span aria-hidden="true">*</span>
+            </label>
 
             <input
               id="nome"
@@ -221,28 +266,16 @@ function AdministrarCategorias() {
               }
               minLength={2}
               maxLength={100}
+              placeholder="Ex.: Rede e Internet"
               required
             />
           </div>
 
-          <div>
-            <label htmlFor="descricao">Descrição</label>
-
-            <textarea
-              id="descricao"
-              value={formulario.descricao}
-              onChange={(event) =>
-                setFormulario({
-                  ...formulario,
-                  descricao: event.target.value,
-                })
-              }
-              rows={4}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="ordem">Ordem</label>
+          <div className="form-campo form-campo-ordem">
+            <label htmlFor="ordem">
+              Ordem
+              <span aria-hidden="true">*</span>
+            </label>
 
             <input
               id="ordem"
@@ -260,73 +293,143 @@ function AdministrarCategorias() {
             />
           </div>
 
-          <button type="submit" disabled={salvando}>
-            {salvando ? "Salvando..." : "Salvar"}
-          </button>
+          <div className="form-campo admin-categoria-descricao">
+            <label htmlFor="descricao">
+              Descrição
+            </label>
 
+            <textarea
+              id="descricao"
+              value={formulario.descricao}
+              onChange={(event) =>
+                setFormulario({
+                  ...formulario,
+                  descricao: event.target.value,
+                })
+              }
+              rows={4}
+              placeholder="Descreva quando esta categoria deve ser utilizada."
+            />
+          </div>
+        </div>
+
+        <div className="form-acoes">
           <button
             type="button"
+            className="btn-secundario"
             onClick={cancelarFormulario}
             disabled={salvando}
           >
             Cancelar
           </button>
-        </form>
-      )}
 
-      {erro && <p role="alert">{erro}</p>}
-      {mensagem && <p>{mensagem}</p>}
+          <button
+            type="submit"
+            disabled={salvando}
+          >
+            {salvando
+              ? "Salvando..."
+              : categoriaEmEdicao
+                ? "Salvar alterações"
+                : "Cadastrar categoria"}
+          </button>
+        </div>
+      </form>
+    )}
 
-      {carregando && <p>Carregando categorias...</p>}
+    {carregando ? (
+      <div className="admin-estado">
+        Carregando categorias...
+      </div>
+    ) : categorias.length === 0 ? (
+      <div className="admin-vazio">
+        <h3>Nenhuma categoria cadastrada</h3>
 
-      {!carregando && !erro && (
-        <>
-          <table>
-            <thead>
-              <tr>
-                <th>Ordem</th>
-                <th>Categoria</th>
-                <th>Descrição</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+        <p>
+          Cadastre uma categoria para começar a classificar
+          os chamados.
+        </p>
 
-            <tbody>
-              {categorias.map((categoria) => (
-                <tr key={categoria.id}>
-                  <td>{categoria.ordem}</td>
-                  <td>{categoria.nome}</td>
-                  <td>{categoria.descricao || "—"}</td>
-                  <td>
+        {!exibirFormulario && (
+          <button
+            type="button"
+            onClick={abrirNovaCategoria}
+          >
+            + Nova categoria
+          </button>
+        )}
+      </div>
+    ) : (
+      <div className="tabela-container">
+        <table className="chamados-tabela">
+          <thead>
+            <tr>
+              <th>Ordem</th>
+              <th>Categoria</th>
+              <th>Descrição</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {categorias.map((categoria) => (
+              <tr key={categoria.id}>
+                <td className="categoria-ordem">
+                  {categoria.ordem}
+                </td>
+
+                <td>
+                  <strong>{categoria.nome}</strong>
+                </td>
+
+                <td className="categoria-descricao">
+                  {categoria.descricao || "—"}
+                </td>
+
+                <td>
+                  <span
+                    className={
+                      categoria.ativo
+                        ? "status-usuario status-ativo"
+                        : "status-usuario status-inativo"
+                    }
+                  >
                     {categoria.ativo ? "Ativa" : "Inativa"}
-                  </td>
-                  <td>
+                  </span>
+                </td>
+
+                <td>
+                  <div className="acoes-usuario">
                     <button
                       type="button"
-                      onClick={() => abrirEdicao(categoria)}
+                      onClick={() =>
+                        abrirEdicao(categoria)
+                      }
                     >
                       Editar
                     </button>
+
                     <button
                       type="button"
-                      onClick={() => alterarStatus(categoria)}
+                      onClick={() =>
+                        alterarStatus(categoria)
+                      }
                     >
-                      {categoria.ativo ? "Desativar" : "Ativar"}
+                      {categoria.ativo
+                        ? "Desativar"
+                        : "Ativar"}
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {categorias.length === 0 && (
-            <p>Nenhuma categoria cadastrada.</p>
-          )}
-        </>
-      )}
-    </section>
-  );
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+);
 }
 
 export default AdministrarCategorias;

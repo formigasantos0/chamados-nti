@@ -262,40 +262,51 @@ async function handleRedefinirSenha(
 
   return (
     <section className="admin-usuarios">
-      <header className="admin-cabecalho">
-        <div>
-          <h1>Administração de Usuários</h1>
-          <p>
-            Gerencie os usuários e os acessos ao sistema de chamados.
-          </p>
-        </div>
+      <header className="pagina-cabecalho admin-pagina-cabecalho">
+              <div>
+                <span className="pagina-eyebrow">
+                  Administração
+                </span>
 
-        {!mostrarFormulario && (
-          <button
-            type="button"
-            className="botao-primario"
-            onClick={abrirNovoUsuario}
-          >
-            + Novo usuário
-          </button>
-        )}
-      </header>
+                <h1>Usuários</h1>
+
+                <p>
+                  Gerencie os usuários, unidades e permissões de acesso
+                  ao Sistema de Chamados.
+                </p>
+              </div>
+
+              {!mostrarFormulario && (
+                <button
+                  type="button"
+                  onClick={abrirNovoUsuario}
+                >
+                  + Novo usuário
+                </button>
+              )}
+            </header>
 
       {erro && (
-        <p role="alert" className="mensagem mensagem-erro">
+        <div
+          className="form-alerta form-alerta-erro admin-alerta"
+          role="alert"
+        >
           {erro}
-        </p>
+        </div>
       )}
 
       {mensagem && (
-        <p role="status" className="mensagem mensagem-sucesso">
+        <div
+          className="form-alerta form-alerta-sucesso admin-alerta"
+          role="status"
+        >
           {mensagem}
-        </p>
+        </div>
       )}
 
       {usuarioSenha && (
         <form
-          className="admin-formulario"
+          className="admin-formulario admin-senha form-card"
           onSubmit={handleRedefinirSenha}>
             <h2>Redefinir senha</h2>
 
@@ -348,123 +359,135 @@ async function handleRedefinirSenha(
 
       {mostrarFormulario && (
         <form 
-        className="admin-formulario"
+        className="admin-formulario form-card"
         onSubmit={handleSalvarUsuario}>
-          <h2>
-            {usuarioEmEdicao
-              ? "Editar usuário"
-              : "Novo usuário"}
-          </h2>
-
-          <div>
-            <label htmlFor="usuario-nome">
-              Nome
-            </label>
-
-            <input
-              id="usuario-nome"
-              type="text"
-              value={nome}
-              onChange={(event) =>
-                setNome(event.target.value)
-              }
-              minLength={3}
-              maxLength={150}
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="usuario-email">
-              E-mail
-            </label>
-
-            <input
-              id="usuario-email"
-              type="email"
-              value={email}
-              onChange={(event) =>
-                setEmail(event.target.value)
-              }
-              required
-            />
-          </div>
-
-          {!usuarioEmEdicao && (
+          <div className="form-card-cabecalho">
             <div>
-              <label htmlFor="usuario-senha">
-                Senha inicial
-              </label>
+              <h2>
+                {usuarioEmEdicao
+                  ? "Editar usuário"
+                  : "Novo usuário"}
+              </h2>
 
-              <input
-                id="usuario-senha"
-                type="password"
-                value={senha}
-                onChange={(event) =>
-                  setSenha(event.target.value)
-                }
-                minLength={8}
-                maxLength={128}
-                autoComplete="new-password"
-                required
-              />
+              <p>
+                {usuarioEmEdicao
+                  ? "Atualize os dados e permissões deste usuário."
+                  : "Cadastre um novo usuário para acesso ao sistema."}
+              </p>
             </div>
-          )}
-
-          <div>
-            <label htmlFor="usuario-unidade">
-              Unidade
-            </label>
-
-            <select
-              id="usuario-unidade"
-              value={unidadeId}
-              onChange={(event) =>
-                setUnidadeId(event.target.value)
-              }
-              required
-            >
-              <option value="">
-                Selecione...
-              </option>
-
-              {unidades.map((unidade) => (
-                <option
-                  key={unidade.id}
-                  value={unidade.id}
-                >
-                  {unidade.sigla} — {unidade.nome}
-                </option>
-              ))}
-            </select>
           </div>
 
-          <div>
-            <label htmlFor="usuario-perfil">
-              Perfil
-            </label>
+          <div className="admin-form-conteudo">
 
-            <select
-              id="usuario-perfil"
-              value={perfil}
-              onChange={(event) =>
-                setPerfil(event.target.value)
-              }
-            >
-              <option value="usuario">
-                Usuário
-              </option>
+                <div>
+                  <label htmlFor="usuario-nome">
+                    Nome
+                  </label>
 
-              <option value="tecnico">
-                Técnico
-              </option>
+                  <input
+                    id="usuario-nome"
+                    type="text"
+                    value={nome}
+                    onChange={(event) =>
+                      setNome(event.target.value)
+                    }
+                    minLength={3}
+                    maxLength={150}
+                    required
+                  />
+                </div>
 
-              <option value="administrador">
-                Administrador
-              </option>
-            </select>
+                <div>
+                  <label htmlFor="usuario-email">
+                    E-mail
+                  </label>
+
+                  <input
+                    id="usuario-email"
+                    type="email"
+                    value={email}
+                    onChange={(event) =>
+                      setEmail(event.target.value)
+                    }
+                    required
+                  />
+                </div>
+
+                {!usuarioEmEdicao && (
+                  <div>
+                    <label htmlFor="usuario-senha">
+                      Senha inicial
+                    </label>
+
+                    <input
+                      id="usuario-senha"
+                      type="password"
+                      value={senha}
+                      onChange={(event) =>
+                        setSenha(event.target.value)
+                      }
+                      minLength={8}
+                      maxLength={128}
+                      autoComplete="new-password"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="usuario-unidade">
+                    Unidade
+                  </label>
+
+                  <select
+                    id="usuario-unidade"
+                    value={unidadeId}
+                    onChange={(event) =>
+                      setUnidadeId(event.target.value)
+                    }
+                    required
+                  >
+                    <option value="">
+                      Selecione...
+                    </option>
+
+                    {unidades.map((unidade) => (
+                      <option
+                        key={unidade.id}
+                        value={unidade.id}
+                      >
+                        {unidade.sigla} — {unidade.nome}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="usuario-perfil">
+                    Perfil
+                  </label>
+
+                  <select
+                    id="usuario-perfil"
+                    value={perfil}
+                    onChange={(event) =>
+                      setPerfil(event.target.value)
+                    }
+                  >
+                    <option value="usuario">
+                      Usuário
+                    </option>
+
+                    <option value="tecnico">
+                      Técnico
+                    </option>
+
+                    <option value="administrador">
+                      Administrador
+                    </option>
+                  </select>
+                </div>
           </div>
-
           <div className="form-acoes">
             <button
               type="submit"

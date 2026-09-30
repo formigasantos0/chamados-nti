@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../contexts/AuthContext";
+import logoNtu from "../assets/logo-ntu-branca.png";
 
 function Login() {
   const navigate = useNavigate();
@@ -45,45 +46,121 @@ function Login() {
   }
 
   return (
-    <main>
-      <section>
-        <h1>Chamados NTI</h1>
-        <p>Entre com sua conta para acessar o sistema.</p>
+  <main className="login-page">
+    <section className="login-brand">
+      <div className="login-brand-conteudo">
+        <img
+          src={logoNtu}
+          alt="NTU"
+          className="login-logo"
+        />
 
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email">E-mail</label>
+        <div className="login-brand-texto">
+          <span className="login-brand-eyebrow">
+            Núcleo de Tecnologia e Informação
+          </span>
+
+          <h1>
+            Atendimento de TI
+            <br />
+            simples e organizado.
+          </h1>
+
+          <p>
+            Registre solicitações, acompanhe atendimentos
+            e mantenha todo o histórico de suporte em um
+            único lugar.
+          </p>
+        </div>
+
+        <div className="login-brand-rodape">
+          Sistema de Chamados NTI
+        </div>
+      </div>
+    </section>
+
+    <section className="login-area">
+      <div className="login-card">
+        <div className="login-card-cabecalho">
+          <span className="pagina-eyebrow">
+            Acesso ao sistema
+          </span>
+
+          <h2>Bem-vindo</h2>
+
+          <p>
+            Entre com sua conta institucional para continuar.
+          </p>
+        </div>
+
+        <form
+          className="login-form"
+          onSubmit={handleSubmit}
+        >
+          <div className="form-campo">
+            <label htmlFor="email">
+              E-mail
+            </label>
+
             <input
               id="email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
               autoComplete="email"
+              placeholder="seu.email@ntu.org.br"
               required
+              autoFocus
             />
           </div>
 
-          <div>
-            <label htmlFor="senha">Senha</label>
+          <div className="form-campo">
+            <label htmlFor="senha">
+              Senha
+            </label>
+
             <input
               id="senha"
               type="password"
               value={senha}
-              onChange={(event) => setSenha(event.target.value)}
+              onChange={(event) =>
+                setSenha(event.target.value)
+              }
               autoComplete="current-password"
+              placeholder="Digite sua senha"
               required
             />
           </div>
 
-          {erro && <p role="alert">{erro}</p>}
+          {erro && (
+            <div
+              className="form-alerta form-alerta-erro login-erro"
+              role="alert"
+            >
+              {erro}
+            </div>
+          )}
 
-          <button type="submit" disabled={enviando}>
-            {enviando ? "Entrando..." : "Entrar"}
+          <button
+            className="login-submit"
+            type="submit"
+            disabled={enviando}
+          >
+            {enviando
+              ? "Entrando..."
+              : "Entrar no sistema"}
           </button>
         </form>
-      </section>
-    </main>
-  );
+
+        <div className="login-card-rodape">
+          Acesso restrito a colaboradores autorizados.
+        </div>
+      </div>
+    </section>
+  </main>
+);
 }
 
 export default Login;

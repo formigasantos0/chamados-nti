@@ -337,399 +337,543 @@ async function abrirAnexo(anexoId: number) {
   }
 
   return (
-    <section>
-      <Link to="/chamados">← Voltar para chamados</Link>
+    <section className="detalhe-chamado">
+      <Link to="/chamados" className="detalhe-voltar">
+        ← Voltar para chamados
+      </Link>
 
-      <header>
-        <p>{chamado.protocolo}</p>
-        <h1>{chamado.titulo}</h1>
-      </header>
-
-      <div>
+      <header className="detalhe-cabecalho">
         <div>
-          <strong>Status:</strong>{" "}
+          <span className="detalhe-protocolo">
+            {chamado.protocolo}
+          </span>
 
-           {equipeNTI ? (
-              <select
-                value={chamado.status}
-                disabled={
-                  atualizando ||
-                  transicoesStatus[chamado.status]?.length === 0
-                }
-                onChange={(event) =>
-                  atualizarChamado(
-                    "status",
-                    event.target.value,
-                  )
-                }
-              >
-                <option value={chamado.status}>
-                  {nomesStatus[chamado.status] ??
-                    formatarTexto(chamado.status)}
-                </option>
-
-                {transicoesStatus[chamado.status]?.map(
-                  (status) => (
-                    <option
-                      key={status}
-                      value={status}
-                    >
-                      {nomesStatus[status] ??
-                        formatarTexto(status)}
-                    </option>
-                  ),
-                )}
-              </select>
-            ) : (
-              formatarTexto(chamado.status)
-            )}
-          </div>
-
-          {equipeNTI && (
-            <div>
-              <strong>Ações:</strong>{" "}
-
-              {chamado.status === "aberto" && (
-                <button
-                  type="button"
-                  disabled={atualizando}
-                  onClick={() =>
-                    atualizarChamado(
-                      "status",
-                      "em_atendimento",
-                    )
-                  }
-                >
-                  Iniciar atendimento
-                </button>
-              )}
-
-              {chamado.status === "em_atendimento" && (
-                <>
-                  <button
-                    type="button"
-                    disabled={atualizando}
-                    onClick={() =>
-                      atualizarChamado(
-                        "status",
-                        "aguardando_usuario",
-                      )
-                    }
-                  >
-                    Aguardar usuário
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={atualizando}
-                    onClick={() =>
-                      atualizarChamado(
-                        "status",
-                        "resolvido",
-                      )
-                    }
-                  >
-                    Resolver
-                  </button>
-                </>
-              )}
-
-              {chamado.status === "aguardando_usuario" && (
-                <>
-                  <button
-                    type="button"
-                    disabled={atualizando}
-                    onClick={() =>
-                      atualizarChamado(
-                        "status",
-                        "em_atendimento",
-                      )
-                    }
-                  >
-                    Retomar atendimento
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={atualizando}
-                    onClick={() =>
-                      atualizarChamado(
-                        "status",
-                        "resolvido",
-                      )
-                    }
-                  >
-                    Resolver
-                  </button>
-                </>
-              )}
-
-              {chamado.status === "resolvido" && (
-                <>
-                  <button
-                    type="button"
-                    disabled={atualizando}
-                    onClick={() =>
-                      atualizarChamado(
-                        "status",
-                        "em_atendimento",
-                      )
-                    }
-                  >
-                    Reabrir
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={atualizando}
-                    onClick={() =>
-                      atualizarChamado(
-                        "status",
-                        "fechado",
-                      )
-                    }
-                  >
-                    Fechar chamado
-                  </button>
-                </>
-              )}
-
-              {chamado.status === "fechado" && (
-                <span>Chamado encerrado</span>
-              )}
-            </div>
-          )}
-
-          <div>
-            <strong>Prioridade:</strong>{" "}
-
-            {equipeNTI ? (
-              <select
-                value={chamado.prioridade}
-                disabled={atualizando}
-                onChange={(event) =>
-                  atualizarChamado("prioridade", event.target.value)
-              }
-          >
-              <option value="baixa">Baixa</option>
-              <option value="normal">Normal</option>
-              <option value="alta">Alta</option>
-              <option value="urgente">Urgente</option>
-            </select>
-          ) : (
-            formatarTexto(chamado.prioridade)
-            )}
-          </div>
-
-        <div>
-          <strong>Responsável:</strong>{" "}
-
-          {equipeNTI ? (
-            <>
-              <select
-                value={chamado.responsavel_id ?? ""}
-                disabled={atualizando}
-                onChange={(event) => {
-                  const valor = event.target.value;
-
-                  atualizarChamado(
-                    "responsavel_id",
-                    valor === "" ? null : Number(valor),
-                  );
-                }}
-              >
-                <option value="">Não atribuído</option>
-
-                {equipe.map((membro) => (
-                  <option key={membro.id} value={membro.id}>
-                    {membro.nome}
-                  </option>
-                ))}
-              </select>
-
-              {usuario &&
-                chamado.responsavel_id !== usuario.id &&
-                chamado.status !== "fechado" && (
-                  <button
-                    type="button"
-                    disabled={atualizando}
-                    onClick={() =>
-                      atualizarChamado(
-                        "responsavel_id",
-                        usuario.id,
-                      )
-                    }
-                  >
-                    {atualizando
-                      ? "Atualizando..."
-                      : "Assumir chamado"}
-                  </button>
-                )}
-            </>
-          ) : (
-            chamado.responsavel
-              ? chamado.responsavel.nome
-              : "Não atribuído"
-          )}
-        </div>
-
-        {erroAtualizacao && (
-          <p role="alert">{erroAtualizacao}</p>
-        )}
-
-        <p>
-          <strong>Categoria:</strong> {chamado.categoria.nome}
-        </p>
-
-        <p>
-          <strong>Solicitante:</strong>{" "}
-          {chamado.solicitante.nome}
-        </p>
-
-        <p>
-          <strong>Unidade:</strong>{" "}
-          {chamado.unidade.sigla} — {chamado.unidade.nome}
-        </p>
-
-        <p>
-          <strong>Aberto em:</strong>{" "}
-          {formatarData(chamado.criado_em)}
-        </p>
-
-        <p>
-          <strong>Última atualização:</strong>{" "}
-          {formatarData(chamado.atualizado_em)}
-        </p>
-      </div>
-
-      <div>
-        <h2>Descrição</h2>
-        <p>{chamado.descricao}</p>
-      </div>
-
-      <section>
-        <h2>Anexos</h2>
-
-        <form onSubmit={handleAnexo}>
-          <div>
-            <label htmlFor="arquivo">
-              Adicionar anexo
-            </label>
-
-            <input
-              id="arquivo"
-              type="file"
-              accept=".png,.jpg,.jpeg,.pdf"
-              onChange={(event) =>
-                setArquivo(event.target.files?.[0] ?? null)
-              }
-            />
-          </div>
+          <h1>{chamado.titulo}</h1>
 
           <p>
-            PNG, JPG ou PDF. Tamanho máximo: 10 MB.
+            Aberto em {formatarData(chamado.criado_em)}
           </p>
+        </div>
 
-          {erroAnexo && (
-            <p role="alert">{erroAnexo}</p>
+        <div className="detalhe-badges">
+          <span className={`badge badge-status-${chamado.status}`}>
+            {formatarTexto(chamado.status)}
+          </span>
+
+          <span
+            className={`badge badge-prioridade-${chamado.prioridade}`}
+          >
+            {formatarTexto(chamado.prioridade)}
+          </span>
+        </div>
+      </header>
+
+      <div className="detalhe-layout">
+          {/* COLUNA PRINCIPAL */}
+          <div className="detalhe-principal">
+            <section className="detalhe-card">
+              <div className="detalhe-card-cabecalho">
+                <h2>Descrição</h2>
+              </div>
+
+              <div className="detalhe-descricao">
+                <p>{chamado.descricao}</p>
+              </div>
+            </section>
+
+            <section className="detalhe-card anexos-card">
+              <div className="detalhe-card-cabecalho">
+                <h2>Anexos</h2>
+                <p>
+                  Arquivos e evidências relacionados ao chamado.
+                </p>
+              </div>
+
+              <div className="anexos-conteudo">
+                <form
+                  className="anexo-upload"
+                  onSubmit={handleAnexo}
+                >
+                  <div className="anexo-upload-campo">
+                    <label htmlFor="arquivo">
+                      Adicionar arquivo
+                    </label>
+
+                    <input
+                      id="arquivo"
+                      type="file"
+                      accept=".png,.jpg,.jpeg,.pdf"
+                      onChange={(event) =>
+                        setArquivo(event.target.files?.[0] ?? null)
+                      }
+                    />
+
+                    <small>
+                      PNG, JPG ou PDF. Tamanho máximo: 10 MB.
+                    </small>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={!arquivo || enviandoAnexo}
+                  >
+                    {enviandoAnexo
+                      ? "Enviando..."
+                      : "Enviar anexo"}
+                  </button>
+                </form>
+
+                {erroAnexo && (
+                  <p className="detalhe-erro" role="alert">
+                    {erroAnexo}
+                  </p>
+                )}
+
+                {anexos.length === 0 ? (
+                  <p className="anexos-vazio">
+                    Nenhum anexo neste chamado.
+                  </p>
+                ) : (
+                  <div className="anexos-lista">
+                    {anexos.map((anexo) => (
+                      <article
+                        className="anexo-item"
+                        key={anexo.id}
+                      >
+                        <div className="anexo-item-info">
+                          <strong>{anexo.nome_original}</strong>
+
+                          <span>
+                            {formatarTamanho(anexo.tamanho_bytes)}
+                            {" • "}
+                            {formatarData(anexo.criado_em)}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="btn-secundario"
+                          onClick={() => abrirAnexo(anexo.id)}
+                        >
+                          Visualizar
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="detalhe-card historico-card">
+              <div className="detalhe-card-cabecalho">
+                <h2>Histórico</h2>
+                <p>
+                  Acompanhe as interações e alterações realizadas neste chamado.
+                </p>
+              </div>
+
+              <div className="historico-conteudo">
+                {historico.length === 0 ? (
+                  <p className="historico-vazio">
+                    Nenhum registro no histórico.
+                  </p>
+                ) : (
+                  <div className="historico-timeline">
+                    {historico.map((item) => (
+                      <article
+                        className="historico-item"
+                        key={item.id}
+                      >
+                        <div className="historico-marcador" />
+
+                        <div className="historico-item-conteudo">
+                          <div className="historico-item-cabecalho">
+                            <div>
+                              <strong>{item.usuario.nome}</strong>
+
+                              <span className="historico-tipo">
+                                {formatarTexto(item.tipo)}
+                              </span>
+                            </div>
+
+                            <time>
+                              {formatarData(item.criado_em)}
+                            </time>
+                          </div>
+
+                          <p>{item.descricao}</p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+          {chamado.status !== "fechado" && (
+            <section className="detalhe-card mensagem-card">
+              <div className="detalhe-card-cabecalho">
+                <h2>Adicionar mensagem</h2>
+                <p>
+                  Registre uma nova interação neste chamado.
+                </p>
+              </div>
+
+              <form
+                className="mensagem-form"
+                onSubmit={handleMensagem}
+              >
+                <label htmlFor="mensagem">
+                  Mensagem
+                </label>
+
+                <textarea
+                  id="mensagem"
+                  value={mensagem}
+                  onChange={(event) =>
+                    setMensagem(event.target.value)
+                  }
+                  maxLength={5000}
+                  rows={5}
+                  placeholder="Digite sua mensagem..."
+                  required
+                />
+
+                {erroMensagem && (
+                  <p className="detalhe-erro" role="alert">
+                    {erroMensagem}
+                  </p>
+                )}
+
+                <div className="mensagem-acoes">
+                  <span>
+                    {mensagem.length}/5000
+                  </span>
+
+                  <button
+                    type="submit"
+                    disabled={
+                      enviandoMensagem ||
+                      !mensagem.trim()
+                    }
+                  >
+                    {enviandoMensagem
+                      ? "Enviando..."
+                      : "Enviar mensagem"}
+                  </button>
+                </div>
+              </form>
+            </section>
           )}
 
-          <button
-            type="submit"
-            disabled={!arquivo || enviandoAnexo}
-          >
-            {enviandoAnexo ? "Enviando..." : "Enviar anexo"}
-          </button>
-        </form>
-
-        {anexos.length === 0 ? (
-          <p>Nenhum anexo neste chamado.</p>
-        ) : (
-          <div>
-            {anexos.map((anexo) => (
-              <article key={anexo.id}>
-                <p>
-                  <strong>{anexo.nome_original}</strong>
-                </p>
-
-                <p>
-                  {formatarTamanho(anexo.tamanho_bytes)}
-                  {" — "}
-                  {formatarData(anexo.criado_em)}
-                </p>
-
-                <button
-                  type="button"
-                  onClick={() => abrirAnexo(anexo.id)}
-                >
-                  Visualizar anexo
-                </button>
-              </article>
-            ))}
           </div>
-        )}
-      </section>
 
-      <section>
-        <h2>Histórico</h2>
+          {/* COLUNA LATERAL */}
+          <aside className="detalhe-lateral">
+            {/* INFORMAÇÕES */}
+            <section className="detalhe-card">
+              <div className="detalhe-card-cabecalho">
+                <h2>Informações</h2>
+              </div>
 
-        {historico.length === 0 ? (
-          <p>Nenhum registro no histórico.</p>
-        ) : (
-          <div>
-            {historico.map((item) => (
-              <article key={item.id}>
-                <p>
-                  <strong>{item.usuario.nome}</strong>
-                  {" — "}
-                  {formatarData(item.criado_em)}
-                </p>
+              <dl className="detalhe-info-lista">
+                <div>
+                  <dt>Solicitante</dt>
+                  <dd>{chamado.solicitante.nome}</dd>
+                </div>
 
-                <p>{item.descricao}</p>
+                <div>
+                  <dt>Unidade</dt>
+                  <dd>
+                    {chamado.unidade.sigla} — {chamado.unidade.nome}
+                  </dd>
+                </div>
 
-                <small>{formatarTexto(item.tipo)}</small>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+                <div>
+                  <dt>Categoria</dt>
+                  <dd>{chamado.categoria.nome}</dd>
+                </div>
 
-      {chamado.status !== "fechado" && (
-        <section>
-          <h2>Adicionar mensagem</h2>
+                <div>
+                  <dt>Aberto em</dt>
+                  <dd>{formatarData(chamado.criado_em)}</dd>
+                </div>
 
-          <form onSubmit={handleMensagem}>
-            <div>
-              <label htmlFor="mensagem">Mensagem</label>
+                <div>
+                  <dt>Última atualização</dt>
+                  <dd>{formatarData(chamado.atualizado_em)}</dd>
+                </div>
+              </dl>
+            </section>
 
-              <textarea
-                id="mensagem"
-                value={mensagem}
-                onChange={(event) =>
-                  setMensagem(event.target.value)
-                }
-                maxLength={5000}
-                rows={5}
-                required
-              />
-            </div>
+            {/* GESTÃO DO CHAMADO */}
+            <section className="detalhe-card">
+              <div className="detalhe-card-cabecalho">
+                <h2>Gestão do chamado</h2>
+              </div>
 
-            {erroMensagem && (
-              <p role="alert">{erroMensagem}</p>
-            )}
+              <div className="detalhe-gestao">
+                {/* STATUS */}
+                <div>
+                  <strong>Status</strong>
 
-            <button
-              type="submit"
-              disabled={enviandoMensagem}
-            >
-              {enviandoMensagem
-                ? "Enviando..."
-                : "Enviar mensagem"}
-            </button>
-          </form>
+                  {equipeNTI ? (
+                    <select
+                      value={chamado.status}
+                      disabled={
+                        atualizando ||
+                        transicoesStatus[chamado.status]?.length === 0
+                      }
+                      onChange={(event) =>
+                        atualizarChamado(
+                          "status",
+                          event.target.value,
+                        )
+                      }
+                    >
+                      <option value={chamado.status}>
+                        {nomesStatus[chamado.status] ??
+                          formatarTexto(chamado.status)}
+                      </option>
+
+                      {transicoesStatus[chamado.status]?.map(
+                        (status) => (
+                          <option
+                            key={status}
+                            value={status}
+                          >
+                            {nomesStatus[status] ??
+                              formatarTexto(status)}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                  ) : (
+                    <span
+                      className={`badge badge-status-${chamado.status}`}
+                    >
+                      {formatarTexto(chamado.status)}
+                    </span>
+                  )}
+                </div>
+
+                {/* AÇÕES DO WORKFLOW */}
+                {equipeNTI && (
+                  <div>
+                    <strong>Ações</strong>
+
+                    {chamado.status === "aberto" && (
+                      <button
+                        type="button"
+                        disabled={atualizando}
+                        onClick={() =>
+                          atualizarChamado(
+                            "status",
+                            "em_atendimento",
+                          )
+                        }
+                      >
+                        Iniciar atendimento
+                      </button>
+                    )}
+
+                    {chamado.status === "em_atendimento" && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={atualizando}
+                          onClick={() =>
+                            atualizarChamado(
+                              "status",
+                              "aguardando_usuario",
+                            )
+                          }
+                        >
+                          Aguardar usuário
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={atualizando}
+                          onClick={() =>
+                            atualizarChamado(
+                              "status",
+                              "resolvido",
+                            )
+                          }
+                        >
+                          Resolver
+                        </button>
+                      </>
+                    )}
+
+                    {chamado.status === "aguardando_usuario" && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={atualizando}
+                          onClick={() =>
+                            atualizarChamado(
+                              "status",
+                              "em_atendimento",
+                            )
+                          }
+                        >
+                          Retomar atendimento
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={atualizando}
+                          onClick={() =>
+                            atualizarChamado(
+                              "status",
+                              "resolvido",
+                            )
+                          }
+                        >
+                          Resolver
+                        </button>
+                      </>
+                    )}
+
+                    {chamado.status === "resolvido" && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={atualizando}
+                          onClick={() =>
+                            atualizarChamado(
+                              "status",
+                              "em_atendimento",
+                            )
+                          }
+                        >
+                          Reabrir
+                        </button>
+
+                        <button
+                          type="button"
+                          disabled={atualizando}
+                          onClick={() =>
+                            atualizarChamado(
+                              "status",
+                              "fechado",
+                            )
+                          }
+                        >
+                          Fechar chamado
+                        </button>
+                      </>
+                    )}
+
+                    {chamado.status === "fechado" && (
+                      <span>Chamado encerrado</span>
+                    )}
+                  </div>
+                )}
+
+                {/* PRIORIDADE */}
+                <div>
+                  <strong>Prioridade</strong>
+
+                  {equipeNTI ? (
+                    <select
+                      value={chamado.prioridade}
+                      disabled={atualizando}
+                      onChange={(event) =>
+                        atualizarChamado(
+                          "prioridade",
+                          event.target.value,
+                        )
+                      }
+                    >
+                      <option value="baixa">Baixa</option>
+                      <option value="normal">Normal</option>
+                      <option value="alta">Alta</option>
+                      <option value="urgente">Urgente</option>
+                    </select>
+                  ) : (
+                    <span
+                      className={`badge badge-prioridade-${chamado.prioridade}`}
+                    >
+                      {formatarTexto(chamado.prioridade)}
+                    </span>
+                  )}
+                </div>
+
+                {/* RESPONSÁVEL */}
+                <div>
+                  <strong>Responsável</strong>
+
+                  {equipeNTI ? (
+                    <>
+                      <select
+                        value={chamado.responsavel_id ?? ""}
+                        disabled={atualizando}
+                        onChange={(event) => {
+                          const valor = event.target.value;
+
+                          atualizarChamado(
+                            "responsavel_id",
+                            valor === ""
+                              ? null
+                              : Number(valor),
+                          );
+                        }}
+                      >
+                        <option value="">Não atribuído</option>
+
+                        {equipe.map((membro) => (
+                          <option
+                            key={membro.id}
+                            value={membro.id}
+                          >
+                            {membro.nome}
+                          </option>
+                        ))}
+                      </select>
+
+                      {usuario &&
+                        chamado.responsavel_id !== usuario.id &&
+                        chamado.status !== "fechado" && (
+                          <button
+                            type="button"
+                            disabled={atualizando}
+                            onClick={() =>
+                              atualizarChamado(
+                                "responsavel_id",
+                                usuario.id,
+                              )
+                            }
+                          >
+                            {atualizando
+                              ? "Atualizando..."
+                              : "Assumir chamado"}
+                          </button>
+                        )}
+                    </>
+                  ) : (
+                    <span>
+                      {chamado.responsavel
+                        ? chamado.responsavel.nome
+                        : "Não atribuído"}
+                    </span>
+                  )}
+                </div>
+
+                {erroAtualizacao && (
+                  <p role="alert">
+                    {erroAtualizacao}
+                  </p>
+                )}
+              </div>
+            </section>
+          </aside>
+        </div>
+  
+      
         </section>
-      )}
-    </section>
   );
 }
 

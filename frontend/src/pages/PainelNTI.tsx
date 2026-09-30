@@ -296,146 +296,6 @@ function limparFiltros() {
             <p>Acompanhamento atual dos chamados.</p>
           </div>
 
-          <div className="painel-filtros">
-            <input
-              type="search"
-              value={pesquisa}
-              placeholder="Buscar protocolo, assunto ou solicitante..."
-              aria-label="Pesquisar chamados"
-              onChange={(event) =>
-                setPesquisa(event.target.value)
-              }
-            />
-            <select
-              value={filtroStatus}
-              onChange={(event) =>
-                setFiltroStatus(event.target.value)
-              }
-            >
-              <option value="">Todos os status</option>
-              <option value="aberto">Aberto</option>
-              <option value="em_atendimento">Em atendimento</option>
-              <option value="aguardando_usuario">
-                Aguardando usuário
-              </option>
-              <option value="resolvido">Resolvido</option>
-              <option value="fechado">Fechado</option>
-            </select>
-
-            <select
-              value={filtroPrioridade}
-              onChange={(event) =>
-                setFiltroPrioridade(event.target.value)
-              }
-            >
-              <option value="">Todas as prioridades</option>
-              <option value="baixa">Baixa</option>
-              <option value="normal">Normal</option>
-              <option value="alta">Alta</option>
-              <option value="urgente">Urgente</option>
-            </select>
-
-            <select
-              value={filtroCategoria}
-              onChange={(event) =>
-                setFiltroCategoria(event.target.value)
-              }
-            >
-              <option value="">Todas as categorias</option>
-
-              {categorias.map((categoria) => (
-                <option
-                  key={categoria.id}
-                  value={categoria.id}
-                >
-                  {categoria.nome}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={filtroResponsavel}
-              onChange={(event) => {
-                setFiltroResponsavel(event.target.value);
-
-                if (event.target.value) {
-                  setSomenteSemResponsavel(false);
-                }
-              }}
-            >
-              <option value="">Todos os responsáveis</option>
-
-              {responsaveis.map((responsavel) => (
-                <option
-                  key={responsavel.id}
-                  value={responsavel.id}
-                >
-                  {responsavel.nome}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={filtroUnidade}
-              onChange={(event) =>
-                setFiltroUnidade(event.target.value)
-              }
-            >
-              <option value="">Todas as unidades</option>
-
-              {unidades.map((unidade) => (
-                <option
-                  key={unidade.id}
-                  value={unidade.id}
-                >
-                  {unidade.sigla} — {unidade.nome}
-                </option>
-              ))}
-            </select>
-
-            <label>
-              <input
-                type="checkbox"
-                checked={somenteSemResponsavel}
-                onChange={(event) => {
-                  setSomenteSemResponsavel(
-                    event.target.checked,
-                  );
-
-                  if (event.target.checked) {
-                    setFiltroResponsavel("");
-                  }
-                }}
-              />
-
-              Sem responsável
-            </label>
-            <select
-              value={ordenacao}
-              onChange={(event) =>
-                setOrdenacao(event.target.value)
-              }
-            >
-              <option value="mais_recentes">
-                Mais recentes primeiro
-              </option>
-
-              <option value="mais_antigos">
-                Mais antigos primeiro
-              </option>
-
-              <option value="prioridade">
-                Maior prioridade primeiro
-              </option>
-            </select>
-            <button
-              type="button"
-              onClick={limparFiltros}
-            >
-              Limpar filtros
-            </button>
-          </div>
-
           <span className="total-chamados">
             {resumo.total} chamados
           </span>
@@ -587,19 +447,6 @@ function limparFiltros() {
           </article>
 
           <article className="painel-card">
-            <h3>Por categoria</h3>
-
-            <div className="metrica-lista">
-              {metricas.por_categoria.map((item) => (
-                <div className="metrica-item" key={item.nome}>
-                  <span>{item.nome}</span>
-                  <strong>{item.quantidade}</strong>
-                </div>
-              ))}
-            </div>
-          </article>
-
-          <article className="painel-card">
             <h3>Por responsável</h3>
 
             <div className="metrica-lista">
@@ -612,18 +459,6 @@ function limparFiltros() {
             </div>
           </article>
 
-          <article className="painel-card">
-            <h3>Por status</h3>
-
-            <div className="metrica-lista">
-              {metricas.por_status.map((item) => (
-                <div className="metrica-item" key={item.nome}>
-                  <span>{formatarTexto(item.nome)}</span>
-                  <strong>{item.quantidade}</strong>
-                </div>
-              ))}
-            </div>
-          </article>
         </div>
 
         <div className="graficos-grid">
@@ -721,7 +556,7 @@ function limparFiltros() {
       </section>
     )}
 
-    <section className="painel-secao">
+    <section className="painel-secao painel-chamados">
       <div className="secao-titulo">
         <div>
           <h2>Chamados</h2>
@@ -731,6 +566,146 @@ function limparFiltros() {
           {chamadosFiltrados.length} de {chamados.length}
         </span>
       </div>
+
+      <div className="painel-filtros">
+            <input
+              type="search"
+              value={pesquisa}
+              placeholder="Buscar protocolo, assunto ou solicitante..."
+              aria-label="Pesquisar chamados"
+              onChange={(event) =>
+                setPesquisa(event.target.value)
+              }
+            />
+            <select
+              value={filtroStatus}
+              onChange={(event) =>
+                setFiltroStatus(event.target.value)
+              }
+            >
+              <option value="">Todos os status</option>
+              <option value="aberto">Aberto</option>
+              <option value="em_atendimento">Em atendimento</option>
+              <option value="aguardando_usuario">
+                Aguardando usuário
+              </option>
+              <option value="resolvido">Resolvido</option>
+              <option value="fechado">Fechado</option>
+            </select>
+
+            <select
+              value={filtroPrioridade}
+              onChange={(event) =>
+                setFiltroPrioridade(event.target.value)
+              }
+            >
+              <option value="">Todas as prioridades</option>
+              <option value="baixa">Baixa</option>
+              <option value="normal">Normal</option>
+              <option value="alta">Alta</option>
+              <option value="urgente">Urgente</option>
+            </select>
+
+            <select
+              value={filtroCategoria}
+              onChange={(event) =>
+                setFiltroCategoria(event.target.value)
+              }
+            >
+              <option value="">Todas as categorias</option>
+
+              {categorias.map((categoria) => (
+                <option
+                  key={categoria.id}
+                  value={categoria.id}
+                >
+                  {categoria.nome}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={filtroResponsavel}
+              onChange={(event) => {
+                setFiltroResponsavel(event.target.value);
+
+                if (event.target.value) {
+                  setSomenteSemResponsavel(false);
+                }
+              }}
+            >
+              <option value="">Todos os responsáveis</option>
+
+              {responsaveis.map((responsavel) => (
+                <option
+                  key={responsavel.id}
+                  value={responsavel.id}
+                >
+                  {responsavel.nome}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={filtroUnidade}
+              onChange={(event) =>
+                setFiltroUnidade(event.target.value)
+              }
+            >
+              <option value="">Todas as unidades</option>
+
+              {unidades.map((unidade) => (
+                <option
+                  key={unidade.id}
+                  value={unidade.id}
+                >
+                  {unidade.sigla} — {unidade.nome}
+                </option>
+              ))}
+            </select>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={somenteSemResponsavel}
+                onChange={(event) => {
+                  setSomenteSemResponsavel(
+                    event.target.checked,
+                  );
+
+                  if (event.target.checked) {
+                    setFiltroResponsavel("");
+                  }
+                }}
+              />
+
+              Sem responsável
+            </label>
+            <select
+              value={ordenacao}
+              onChange={(event) =>
+                setOrdenacao(event.target.value)
+              }
+            >
+              <option value="mais_recentes">
+                Mais recentes primeiro
+              </option>
+
+              <option value="mais_antigos">
+                Mais antigos primeiro
+              </option>
+
+              <option value="prioridade">
+                Maior prioridade primeiro
+              </option>
+            </select>
+            <button
+              type="button"
+              onClick={limparFiltros}
+            >
+              Limpar filtros
+            </button>
+          </div>
 
       {chamadosFiltrados.length === 0 ? (
   <div className="painel-card">

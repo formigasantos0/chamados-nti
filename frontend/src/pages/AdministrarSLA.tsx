@@ -315,47 +315,79 @@ function AdministrarSLA() {
   }
 
   return (
-    <div className="admin-usuarios">
-      <h1>Administração de SLA</h1>
+  <section className="admin-sla">
+    <header className="pagina-cabecalho">
+      <div>
+        <span className="pagina-eyebrow">
+          Administração
+        </span>
 
-      <p>
-        Configure os prazos de atendimento, calendário
-        operacional e feriados utilizados no cálculo de SLA.
-      </p>
+        <h1>SLA</h1>
 
-      {mensagem && (
-        <p className="mensagem-sucesso">{mensagem}</p>
-      )}
+        <p>
+          Configure os prazos, o calendário operacional e os
+          feriados utilizados no cálculo do nível de serviço.
+        </p>
+      </div>
+    </header>
 
-      {erro && (
-        <p className="mensagem-erro">{erro}</p>
-      )}
+    {erro && (
+      <div
+        className="form-alerta form-alerta-erro admin-alerta"
+        role="alert"
+      >
+        {erro}
+      </div>
+    )}
 
-      <section>
-        <h2>Políticas de SLA</h2>
+    {mensagem && (
+      <div
+        className="form-alerta form-alerta-sucesso admin-alerta"
+        role="status"
+      >
+        {mensagem}
+      </div>
+    )}
 
-        <div className="tabela-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Prioridade</th>
-                <th>Primeiro atendimento (min)</th>
-                <th>Resolução (min)</th>
-                <th>Ativo</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
+    {/* POLÍTICAS DE SLA */}
+    <section className="sla-card">
+      <div className="sla-card-cabecalho">
+        <div>
+          <h2>Políticas de SLA</h2>
 
-            <tbody>
-              {politicas.map((politica) => (
-                <tr key={politica.id}>
-                  <td>
-                    {nomesPrioridades[
-                      politica.prioridade
-                    ] ?? politica.prioridade}
-                  </td>
+          <p>
+            Defina os prazos de primeiro atendimento e resolução
+            para cada nível de prioridade.
+          </p>
+        </div>
+      </div>
 
-                  <td>
+      <div className="tabela-container sla-tabela-container">
+        <table className="chamados-tabela sla-tabela">
+          <thead>
+            <tr>
+              <th>Prioridade</th>
+              <th>Primeiro atendimento</th>
+              <th>Resolução</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {politicas.map((politica) => (
+              <tr key={politica.id}>
+                <td>
+                  <span
+                    className={`badge badge-prioridade-${politica.prioridade}`}
+                  >
+                    {nomesPrioridades[politica.prioridade] ??
+                      politica.prioridade}
+                  </span>
+                </td>
+
+                <td>
+                  <div className="sla-campo-minutos">
                     <input
                       type="number"
                       min="1"
@@ -370,15 +402,17 @@ function AdministrarSLA() {
                         )
                       }
                     />
-                  </td>
 
-                  <td>
+                    <span>min</span>
+                  </div>
+                </td>
+
+                <td>
+                  <div className="sla-campo-minutos">
                     <input
                       type="number"
                       min="1"
-                      value={
-                        politica.resolucao_minutos
-                      }
+                      value={politica.resolucao_minutos}
                       onChange={(event) =>
                         alterarPolitica(
                           politica.id,
@@ -387,9 +421,13 @@ function AdministrarSLA() {
                         )
                       }
                     />
-                  </td>
 
-                  <td>
+                    <span>min</span>
+                  </div>
+                </td>
+
+                <td>
+                  <label className="sla-checkbox-status">
                     <input
                       type="checkbox"
                       checked={politica.ativo}
@@ -407,33 +445,58 @@ function AdministrarSLA() {
                         )
                       }
                     />
-                  </td>
 
-                  <td>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        salvarPolitica(politica)
-                      }
-                    >
-                      Salvar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                    <span>
+                      {politica.ativo ? "Ativo" : "Inativo"}
+                    </span>
+                  </label>
+                </td>
 
-      {configuracao && (
-        <section>
-          <h2>Calendário de atendimento</h2>
+                <td>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      salvarPolitica(politica)
+                    }
+                  >
+                    Salvar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
+      <div className="sla-legenda">
+        Os prazos são contabilizados em minutos úteis conforme
+        o calendário configurado abaixo.
+      </div>
+    </section>
+
+    {/* CALENDÁRIO */}
+    {configuracao && (
+      <section className="sla-card">
+        <div className="sla-card-cabecalho">
           <div>
-            <label>
-              Timezone
+            <h2>Calendário de atendimento</h2>
+
+            <p>
+              Configure os dias e horários considerados úteis
+              para o cálculo dos SLAs.
+            </p>
+          </div>
+        </div>
+
+        <div className="sla-calendario-conteudo">
+          <div className="sla-calendario-grid">
+            <div className="form-campo">
+              <label htmlFor="sla-timezone">
+                Fuso horário
+              </label>
+
               <input
+                id="sla-timezone"
                 type="text"
                 value={configuracao.timezone}
                 onChange={(event) =>
@@ -443,15 +506,21 @@ function AdministrarSLA() {
                   )
                 }
               />
-            </label>
 
-            <label>
-              Início
+              <small>
+                Ex.: America/Sao_Paulo
+              </small>
+            </div>
+
+            <div className="form-campo">
+              <label htmlFor="sla-inicio">
+                Início do expediente
+              </label>
+
               <input
+                id="sla-inicio"
                 type="time"
-                value={
-                  configuracao.hora_inicio.slice(0, 5)
-                }
+                value={configuracao.hora_inicio.slice(0, 5)}
                 onChange={(event) =>
                   alterarConfiguracao(
                     "hora_inicio",
@@ -459,11 +528,15 @@ function AdministrarSLA() {
                   )
                 }
               />
-            </label>
+            </div>
 
-            <label>
-              Fim
+            <div className="form-campo">
+              <label htmlFor="sla-fim">
+                Fim do expediente
+              </label>
+
               <input
+                id="sla-fim"
                 type="time"
                 value={configuracao.hora_fim.slice(0, 5)}
                 onChange={(event) =>
@@ -473,130 +546,173 @@ function AdministrarSLA() {
                   )
                 }
               />
-            </label>
+            </div>
           </div>
 
-          <h3>Dias úteis</h3>
+          <div className="sla-dias">
+            <span className="sla-subtitulo">
+              Dias úteis
+            </span>
 
-          <div>
-            {diasSemana.map(([campo, nome]) => (
-              <label key={campo}>
-                <input
-                  type="checkbox"
-                  checked={configuracao[campo]}
-                  onChange={(event) =>
-                    alterarConfiguracao(
-                      campo,
-                      event.target.checked,
-                    )
-                  }
-                />
-                {nome}
-              </label>
-            ))}
+            <div className="sla-dias-grid">
+              {diasSemana.map(([campo, nome]) => (
+                <label
+                  className="sla-dia"
+                  key={campo}
+                >
+                  <input
+                    type="checkbox"
+                    checked={configuracao[campo]}
+                    onChange={(event) =>
+                      alterarConfiguracao(
+                        campo,
+                        event.target.checked,
+                      )
+                    }
+                  />
+
+                  <span>{nome}</span>
+                </label>
+              ))}
+            </div>
           </div>
+        </div>
 
+        <div className="form-acoes">
           <button
             type="button"
             onClick={salvarConfiguracao}
           >
             Salvar calendário
           </button>
-        </section>
-      )}
+        </div>
+      </section>
+    )}
 
-      <section>
-        <h2>Feriados</h2>
+    {/* FERIADOS */}
+    <section className="sla-card">
+      <div className="sla-card-cabecalho">
+        <div>
+          <h2>Feriados</h2>
 
-        <form onSubmit={criarFeriado}>
-          <label>
+          <p>
+            Cadastre datas que não devem ser contabilizadas
+            como período útil no cálculo dos SLAs.
+          </p>
+        </div>
+      </div>
+
+      <form
+        className="sla-feriado-form"
+        onSubmit={criarFeriado}
+      >
+        <div className="form-campo">
+          <label htmlFor="feriado-data">
             Data
-            <input
-              type="date"
-              value={novaData}
-              onChange={(event) =>
-                setNovaData(event.target.value)
-              }
-              required
-            />
           </label>
 
-          <label>
-            Nome
-            <input
-              type="text"
-              value={novoNome}
-              onChange={(event) =>
-                setNovoNome(event.target.value)
-              }
-              placeholder="Ex.: Natal"
-              required
-            />
+          <input
+            id="feriado-data"
+            type="date"
+            value={novaData}
+            onChange={(event) =>
+              setNovaData(event.target.value)
+            }
+            required
+          />
+        </div>
+
+        <div className="form-campo sla-feriado-nome">
+          <label htmlFor="feriado-nome">
+            Nome do feriado
           </label>
 
-          <button type="submit">
-            Cadastrar feriado
-          </button>
-        </form>
+          <input
+            id="feriado-nome"
+            type="text"
+            value={novoNome}
+            onChange={(event) =>
+              setNovoNome(event.target.value)
+            }
+            placeholder="Ex.: Natal"
+            required
+          />
+        </div>
 
-        <div className="tabela-wrapper">
-          <table>
-            <thead>
+        <button type="submit">
+          + Cadastrar feriado
+        </button>
+      </form>
+
+      <div className="tabela-container sla-tabela-container">
+        <table className="chamados-tabela">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Feriado</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {feriados.length === 0 ? (
               <tr>
-                <th>Data</th>
-                <th>Feriado</th>
-                <th>Status</th>
-                <th>Ações</th>
+                <td
+                  className="sla-tabela-vazia"
+                  colSpan={4}
+                >
+                  Nenhum feriado cadastrado.
+                </td>
               </tr>
-            </thead>
-
-            <tbody>
-              {feriados.length === 0 ? (
-                <tr>
-                  <td colSpan={4}>
-                    Nenhum feriado cadastrado.
+            ) : (
+              feriados.map((feriado) => (
+                <tr key={feriado.id}>
+                  <td className="coluna-data">
+                    {new Date(
+                      `${feriado.data}T00:00:00`,
+                    ).toLocaleDateString("pt-BR")}
                   </td>
-                </tr>
-              ) : (
-                feriados.map((feriado) => (
-                  <tr key={feriado.id}>
-                    <td>
-                      {new Date(
-                        `${feriado.data}T00:00:00`,
-                      ).toLocaleDateString("pt-BR")}
-                    </td>
 
-                    <td>{feriado.nome}</td>
+                  <td>
+                    <strong>{feriado.nome}</strong>
+                  </td>
 
-                    <td>
+                  <td>
+                    <span
+                      className={
+                        feriado.ativo
+                          ? "status-usuario status-ativo"
+                          : "status-usuario status-inativo"
+                      }
+                    >
                       {feriado.ativo
                         ? "Ativo"
                         : "Inativo"}
-                    </td>
+                    </span>
+                  </td>
 
-                    <td>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          alterarStatusFeriado(
-                            feriado,
-                          )
-                        }
-                      >
-                        {feriado.ativo
-                          ? "Desativar"
-                          : "Ativar"}
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-  );
+                  <td>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        alterarStatusFeriado(feriado)
+                      }
+                    >
+                      {feriado.ativo
+                        ? "Desativar"
+                        : "Ativar"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+);
 }
 
 export default AdministrarSLA;

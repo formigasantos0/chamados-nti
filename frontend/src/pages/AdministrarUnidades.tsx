@@ -253,21 +253,24 @@ function AdministrarUnidades() {
   }
 
   return (
-    <section className="admin-usuarios">
-      <header className="admin-cabecalho">
+    <section className="admin-unidades">
+      <header className="pagina-cabecalho admin-pagina-cabecalho">
         <div>
-          <h1>Unidades Organizacionais</h1>
+          <span className="pagina-eyebrow">
+            Administração
+          </span>
+
+          <h1>Unidades</h1>
 
           <p>
             Gerencie a estrutura organizacional utilizada pelo
-            sistema de chamados.
+            Sistema de Chamados.
           </p>
         </div>
 
         {!mostrarFormulario && (
           <button
             type="button"
-            className="botao-primario"
             onClick={abrirNovaUnidade}
           >
             + Nova unidade
@@ -276,27 +279,45 @@ function AdministrarUnidades() {
       </header>
 
       {erro && (
-        <p role="alert" className="mensagem mensagem-erro">
+        <div
+          className="form-alerta form-alerta-erro admin-alerta"
+          role="alert"
+        >
           {erro}
-        </p>
+        </div>
       )}
 
       {mensagem && (
-        <p role="status" className="mensagem mensagem-sucesso">
+        <div
+          className="form-alerta form-alerta-sucesso admin-alerta"
+          role="status"
+        >
           {mensagem}
-        </p>
+        </div>
       )}
 
       {mostrarFormulario && (
         <form
-          className="admin-formulario"
+          className="admin-formulario form-card"
           onSubmit={handleSalvarUnidade}
         >
-          <h2>
-            {unidadeEmEdicao
-              ? "Editar unidade"
-              : "Nova unidade"}
-          </h2>
+          <div className="form-card-cabecalho">
+            <div>
+              <h2>
+                {unidadeEmEdicao
+                  ? "Editar unidade"
+                  : "Nova unidade"}
+              </h2>
+
+              <p>
+                {unidadeEmEdicao
+                  ? "Atualize os dados e a posição desta unidade na estrutura organizacional."
+                  : "Cadastre uma nova unidade na estrutura organizacional."}
+              </p>
+            </div>
+          </div>
+
+          <div className="admin-form-conteudo">
 
           <div>
             <label htmlFor="unidade-nome">Nome</label>
@@ -377,6 +398,9 @@ function AdministrarUnidades() {
                 ))}
             </select>
           </div>
+
+          </div>
+          {/* fecha admin-form-conteudo */}
 
           <div className="form-acoes">
             <button
