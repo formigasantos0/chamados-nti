@@ -57,7 +57,7 @@ function Login() {
 
         <div className="login-brand-texto">
           <span className="login-brand-eyebrow">
-            Núcleo de Tecnologia e Informação
+            Núcleo de Tecnologia da Informação
           </span>
 
           <h1>
