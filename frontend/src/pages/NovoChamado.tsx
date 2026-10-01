@@ -21,9 +21,7 @@ function NovoChamado() {
   const [categoriaId, setCategoriaId] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [carregandoCategorias, setCarregandoCategorias] = useState(true);
-
-  const [prioridade, setPrioridade] =
-    useState<ChamadoCriar["prioridade"]>("normal");
+  const [arquivo, setArquivo] = useState<File | null>(null);
 
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
@@ -61,22 +59,49 @@ function NovoChamado() {
       titulo,
       descricao,
       categoria_id: categoriaIdNumerico,
-      prioridade,
+      prioridade: "normal",
     };
 
     try {
-      await api.post<Chamado>("/chamados/", dados);
+  const response = await api.post<Chamado>("/chamados/", dados);
 
-      navigate("/chamados");
-    } catch (error) {
-      if (isAxiosError(error) && error.response?.data?.detail) {
-        setErro(String(error.response.data.detail));
-      } else {
-        setErro("Não foi possível abrir o chamado.");
-      }
-    } finally {
-      setEnviando(false);
+  const chamadoCriado = response.data;
+
+  if (arquivo) {
+    try {
+      const formData = new FormData();
+      formData.append("arquivo", arquivo);
+
+      await api.post(
+        `/chamados/${chamadoCriado.id}/anexos`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+    } catch {
+      navigate(`/chamados/${chamadoCriado.id}`, {
+        state: {
+          aviso:
+            "Chamado aberto com sucesso, mas não foi possível enviar o anexo. Você pode anexá-lo novamente nesta página.",
+        },
+      });
+      return;
     }
+  }
+
+  navigate(`/chamados/${chamadoCriado.id}`);
+} catch (error) {
+  if (isAxiosError(error) && error.response?.data?.detail) {
+    setErro(String(error.response.data.detail));
+  } else {
+    setErro("Não foi possível abrir o chamado.");
+  }
+} finally {
+  setEnviando(false);
+}
   }
 
  return (
@@ -135,7 +160,7 @@ function NovoChamado() {
             </small>
           </div>
 
-          <div className="form-grid">
+          
             <div className="form-campo">
               <label htmlFor="categoria">
                 Categoria
@@ -172,35 +197,6 @@ function NovoChamado() {
               </small>
             </div>
 
-            <div className="form-campo">
-              <label htmlFor="prioridade">
-                Prioridade
-                <span aria-hidden="true">*</span>
-              </label>
-
-              <select
-                id="prioridade"
-                value={prioridade}
-                onChange={(event) =>
-                  setPrioridade(
-                    event.target
-                      .value as ChamadoCriar["prioridade"],
-                  )
-                }
-              >
-                <option value="baixa">Baixa</option>
-                <option value="normal">Normal</option>
-                <option value="alta">Alta</option>
-                <option value="urgente">Urgente</option>
-              </select>
-
-              <small>
-                Utilize prioridades altas somente quando houver
-                impacto relevante no trabalho.
-              </small>
-            </div>
-          </div>
-
           <div className="form-campo">
             <label htmlFor="descricao">
               Descrição
@@ -227,6 +223,25 @@ function NovoChamado() {
 
               <span>{descricao.length}/5000</span>
             </div>
+          </div>
+
+          <div className="form-campo">
+            <label htmlFor="arquivo">
+              Anexo
+            </label>
+
+            <input
+              id="arquivo"
+              type="file"
+              onChange={(event) =>
+                setArquivo(event.target.files?.[0] ?? null)
+              }
+            />
+
+            <small>
+              Opcional. Anexe uma imagem ou arquivo que possa ajudar a equipe de NTI
+              a identificar o problema.
+            </small>
           </div>
 
           {erro && (

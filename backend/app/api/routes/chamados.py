@@ -44,23 +44,8 @@ def criar_chamado(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_usuario_atual),
 ):
-    prioridades_validas = {
-        "baixa",
-        "normal",
-        "alta",
-        "urgente",
-    }
-
-
-
-    prioridade = dados.prioridade.lower()
-
-    if prioridade not in prioridades_validas:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Prioridade inválida",
-        )
-
+    prioridade = "normal"
+    
     categoria = db.get(Categoria, dados.categoria_id)
 
     if categoria is None or not categoria.ativo:
