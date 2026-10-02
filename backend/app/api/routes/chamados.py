@@ -56,7 +56,7 @@ def criar_chamado(
         )
 
     chamado = Chamado(
-    protocolo=f"TEMP-{uuid4().hex}",
+    protocolo=f"TEMP-{uuid4().hex[:16]}",
     titulo=dados.titulo.strip(),
     descricao=dados.descricao.strip(),
     categoria_id=categoria.id,
