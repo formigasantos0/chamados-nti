@@ -225,7 +225,7 @@ function NovoChamado() {
             </div>
           </div>
 
-          <div className="form-campo">
+          <div className="form-campo anexo-upload-campo">
             <label htmlFor="arquivo">
               Anexo
             </label>

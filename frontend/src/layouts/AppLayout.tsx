@@ -49,12 +49,16 @@ function AppLayout() {
     <div className="app-shell">
       <aside className="app-sidebar">
        <div className="app-brand">
-        <img
-          src={logoNTU}
-          alt="NTU"
-          className="app-brand-logo"
-        />
-      </div>
+          <img
+            src={logoNTU}
+            alt="NTU"
+            className="app-brand-logo"
+          />
+
+          <span className="app-brand-subtitulo">
+            Service Desk
+          </span>
+        </div>
 
         <nav className="app-menu">
           <div className="app-menu-grupo">

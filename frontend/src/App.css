@@ -3144,3 +3144,180 @@ button:disabled {
     min-width: 0;
   }
 }
+/* =========================================================
+   Identidade visual NTU Service Desk
+   ========================================================= */
+
+:root {
+  --color-primary: #159455;
+  --color-primary-hover: #107a46;
+  --color-primary-soft: #e8f7ef;
+
+  --accent: #159455;
+  --accent-bg: #e8f7ef;
+  --accent-border: #a7dfc1;
+}
+
+/* Sidebar */
+
+.app-sidebar {
+  background:
+    linear-gradient(
+      180deg,
+      #18211e 0%,
+      #14201c 55%,
+      #101a17 100%
+    );
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Marca */
+
+.app-brand {
+  min-height: 94px;
+  padding: 14px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-align: center;
+}
+
+.app-brand-logo {
+  width: 112px;
+  max-height: 50px;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.app-brand-subtitulo {
+  display: block;
+  margin: 0;
+  color: #e5eee9;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+/* Títulos dos grupos */
+
+.app-menu-titulo {
+  color: #71847b;
+}
+
+/* Links */
+
+.app-menu-link {
+  color: #c9d4ce;
+}
+
+.app-menu-link:hover {
+  background: rgba(255, 255, 255, 0.055);
+  color: #ffffff;
+}
+
+/* Item selecionado */
+
+.app-menu-link.ativo {
+  background: #159455;
+  color: #ffffff;
+}
+
+/* Botão sair */
+
+.app-logout {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #d5ded9;
+}
+
+.app-logout:hover:not(:disabled) {
+  border-color: rgba(21, 148, 85, 0.6);
+  background: rgba(21, 148, 85, 0.12);
+  color: #ffffff;
+}
+
+/* Avatar */
+
+.app-avatar {
+  background: #e8f7ef;
+  color: #107a46;
+}
+
+/* Botões e links principais */
+
+.botao-link-primario {
+  background: #159455;
+}
+
+.botao-link-primario:hover {
+  background: #107a46;
+  color: #ffffff;
+}
+
+/* Foco dos formulários */
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #159455;
+  box-shadow: 0 0 0 3px rgba(21, 148, 85, 0.12);
+}
+
+button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(21, 148, 85, 0.18);
+}
+
+/* Cards de resumo */
+
+.resumo-card::before {
+  background: #159455;
+}
+
+/* Timeline */
+
+.historico-marcador {
+  border-color: #ccebd9;
+  background: #159455;
+}
+
+/* Tabela */
+
+.chamados-tabela td:first-child a,
+.meus-chamados-tabela-container .protocolo-link {
+  color: #159455;
+}
+
+.chamados-tabela td:first-child a:hover,
+.meus-chamados-tabela-container .protocolo-link:hover {
+  color: #107a46;
+}
+
+/* Login - mesma identidade do Service Desk */
+
+.login-brand {
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(21, 148, 85, 0.22),
+      transparent 32%
+    ),
+    linear-gradient(
+      145deg,
+      #173329 0%,
+      #123c32 55%,
+      #0d251e 100%
+    );
+}
+
+.login-brand-eyebrow {
+  color: #9ad8b7;
+}
+
+/* Checkbox */
+
+input[type="checkbox"] {
+  accent-color: #159455;
+}
