@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from uuid import uuid4
 
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -55,7 +56,7 @@ def criar_chamado(
         )
 
     chamado = Chamado(
-    protocolo="TEMP",
+    protocolo=f"TEMP-{uuid4().hex}",
     titulo=dados.titulo.strip(),
     descricao=dados.descricao.strip(),
     categoria_id=categoria.id,
