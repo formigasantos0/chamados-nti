@@ -13,6 +13,16 @@ class Settings(BaseSettings):
     aws_region: str = "sa-east-1"
     s3_bucket_name: str
 
+    smtp_host: str
+    smtp_port: int = 587
+    smtp_starttls: bool = True
+    smtp_username: str
+    smtp_password: str
+    smtp_from: str
+
+    notificacao_nti_email: str
+    app_url: str
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore",

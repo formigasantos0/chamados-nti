@@ -1,3 +1,9 @@
+import logging
+
+from app.core.config import settings
+from app.services.email_service import enviar_email
+from app.services.email_templates import template_novo_chamado
+
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -23,7 +29,7 @@ from app.schemas.chamado import (
     MensagemResponse,
 )
 
-
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/chamados",
@@ -91,6 +97,29 @@ def criar_chamado(
         )
         .where(Chamado.id == chamado.id)
     )
+
+    try:
+        corpo_texto, corpo_html = template_novo_chamado(
+            protocolo=chamado.protocolo,
+            solicitante_nome=chamado.solicitante.nome,
+            solicitante_email=chamado.solicitante.email,
+            unidade=chamado.unidade.nome,
+            categoria=chamado.categoria.nome,
+            assunto=chamado.titulo,
+        )
+
+        enviar_email(
+            destinatario=settings.notificacao_nti_email,
+            assunto=f"Novo chamado {chamado.protocolo} - {chamado.titulo}",
+            corpo=corpo_texto,
+            html=corpo_html,
+        )
+
+    except Exception:
+        logger.exception(
+            "Falha ao enviar notificação do chamado %s",
+            chamado.protocolo,
+        )
 
     return chamado
 
