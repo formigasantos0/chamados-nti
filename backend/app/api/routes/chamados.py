@@ -2,7 +2,11 @@ import logging
 
 from app.core.config import settings
 from app.services.email_service import enviar_email
-from app.services.email_templates import template_novo_chamado
+from app.services.email_templates import (
+    template_chamado_recebido,
+    template_nova_interacao,
+    template_novo_chamado,
+)
 
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -114,6 +118,22 @@ def criar_chamado(
             corpo=corpo_texto,
             html=corpo_html,
         )
+        corpo_usuario_texto, corpo_usuario_html = template_chamado_recebido(
+            protocolo=chamado.protocolo,
+            solicitante_nome=chamado.solicitante.nome,
+            categoria=chamado.categoria.nome,
+            assunto=chamado.titulo,
+            chamado_id=chamado.id,
+            app_url=settings.app_url,
+        )
+
+        enviar_email(
+            destinatario=chamado.solicitante.email,
+            assunto=f"[{chamado.protocolo}] Chamado recebido",
+            corpo=corpo_usuario_texto,
+            html=corpo_usuario_html,
+        )
+
 
     except Exception:
         logger.exception(
@@ -499,6 +519,47 @@ def adicionar_mensagem(
     db.add(mensagem)
     db.commit()
     db.refresh(mensagem)
+
+    try:
+        # Técnico ou administrador respondeu:
+        # notifica o solicitante.
+        if usuario.perfil in {"tecnico", "administrador"}:
+            destinatario_email = chamado.solicitante.email
+            destinatario_nome = chamado.solicitante.nome
+
+        # Solicitante respondeu:
+        # notifica o responsável ou, se ainda não houver,
+        # a caixa geral do NTI.
+        elif chamado.responsavel is not None:
+            destinatario_email = chamado.responsavel.email
+            destinatario_nome = chamado.responsavel.nome
+
+        else:
+            destinatario_email = settings.notificacao_nti_email
+            destinatario_nome = "Equipe NTI"
+
+        corpo_texto, corpo_html = template_nova_interacao(
+            protocolo=chamado.protocolo,
+            destinatario_nome=destinatario_nome,
+            autor_nome=usuario.nome,
+            assunto=chamado.titulo,
+            mensagem=mensagem.descricao,
+            chamado_id=chamado.id,
+            app_url=settings.app_url,
+        )
+
+        enviar_email(
+            destinatario=destinatario_email,
+            assunto=f"[{chamado.protocolo}] Nova interação",
+            corpo=corpo_texto,
+            html=corpo_html,
+        )
+
+    except Exception:
+        logger.exception(
+            "Falha ao enviar notificação de interação do chamado %s",
+            chamado.protocolo,
+        )
 
     return mensagem
 

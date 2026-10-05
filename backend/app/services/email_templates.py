@@ -107,3 +107,253 @@ Acesse o Service Desk da NTU para visualizar e atender o chamado.
 """.strip()
 
     return texto, html
+
+def template_chamado_recebido(
+    protocolo: str,
+    solicitante_nome: str,
+    categoria: str,
+    assunto: str,
+    chamado_id: int,
+    app_url: str,
+) -> tuple[str, str]:
+    protocolo = escape(protocolo)
+    solicitante_nome = escape(solicitante_nome)
+    categoria = escape(categoria)
+    assunto = escape(assunto)
+
+    url_chamado = f"{app_url.rstrip('/')}/chamados/{chamado_id}"
+
+    texto = f"""
+Olá, {solicitante_nome}.
+
+Seu chamado foi registrado com sucesso no Service Desk da NTU.
+
+Protocolo: {protocolo}
+Assunto: {assunto}
+Categoria: {categoria}
+Status: Aberto
+
+Nossa equipe de NTI foi notificada e dará continuidade ao atendimento.
+
+Acompanhe seu chamado:
+{url_chamado}
+
+Mensagem automática do Service Desk NTU.
+Não responda a este e-mail.
+""".strip()
+
+    html = f"""
+<!DOCTYPE html>
+<html lang="pt-BR">
+<body style="margin:0; padding:0; background:#f4f6f5; font-family:Arial,Helvetica,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f5; padding:32px 16px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0"
+                       style="max-width:600px; width:100%; background:#ffffff; border:1px solid #dce3df; border-radius:8px;">
+
+                    <tr>
+                        <td style="background:#18201d; padding:24px 32px;">
+                            <div style="color:#ffffff; font-size:22px; font-weight:bold;">
+                                Service Desk
+                            </div>
+                            <div style="color:#aebbb4; font-size:14px; margin-top:4px;">
+                                Núcleo de Tecnologia da Informação - NTI
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:32px;">
+                            <div style="color:#159455; font-size:13px; font-weight:bold;">
+                                CHAMADO RECEBIDO
+                            </div>
+
+                            <h2 style="color:#16201b; margin:8px 0 16px;">
+                                {protocolo}
+                            </h2>
+
+                            <p style="color:#445049; font-size:14px;">
+                                Olá, <strong>{solicitante_nome}</strong>.
+                            </p>
+
+                            <p style="color:#445049; font-size:14px;">
+                                Seu chamado foi registrado com sucesso.
+                                Nossa equipe de NTI foi notificada e dará continuidade ao atendimento.
+                            </p>
+
+                            <table width="100%" cellpadding="8" cellspacing="0"
+                                   style="font-size:14px; color:#445049; margin:20px 0;">
+                                <tr>
+                                    <td><strong>Assunto</strong></td>
+                                    <td>{assunto}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Categoria</strong></td>
+                                    <td>{categoria}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status</strong></td>
+                                    <td>Aberto</td>
+                                </tr>
+                            </table>
+
+                            <table cellpadding="0" cellspacing="0" style="margin-top:28px;">
+                                <tr>
+                                    <td style="background:#159455; border-radius:6px;">
+                                        <a href="{url_chamado}"
+                                           style="display:inline-block; padding:12px 20px;
+                                                  color:#ffffff; text-decoration:none;
+                                                  font-size:14px; font-weight:bold;">
+                                            Acompanhar chamado
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="border-top:1px solid #dce3df; padding:18px 32px;
+                                   color:#7a857f; font-size:12px;">
+                            Mensagem automática do Service Desk NTU.
+                            Não responda a este e-mail.
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+""".strip()
+
+    return texto, html
+
+def template_nova_interacao(
+    protocolo: str,
+    destinatario_nome: str,
+    autor_nome: str,
+    assunto: str,
+    mensagem: str,
+    chamado_id: int,
+    app_url: str,
+) -> tuple[str, str]:
+    protocolo = escape(protocolo)
+    destinatario_nome = escape(destinatario_nome)
+    autor_nome = escape(autor_nome)
+    assunto = escape(assunto)
+    mensagem = escape(mensagem)
+
+    url_chamado = f"{app_url.rstrip('/')}/chamados/{chamado_id}"
+
+    texto = f"""
+Olá, {destinatario_nome}.
+
+Uma nova interação foi registrada no chamado {protocolo}.
+
+Assunto: {assunto}
+Enviado por: {autor_nome}
+
+Mensagem:
+{mensagem}
+
+Acesse o Service Desk para visualizar o chamado:
+{url_chamado}
+
+Mensagem automática do Service Desk NTU.
+Não responda a este e-mail.
+""".strip()
+
+    html = f"""
+<!DOCTYPE html>
+<html lang="pt-BR">
+<body style="margin:0; padding:0; background:#f4f6f5; font-family:Arial,Helvetica,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0"
+           style="background:#f4f6f5; padding:32px 16px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0"
+                       style="max-width:600px; width:100%; background:#ffffff;
+                              border:1px solid #dce3df; border-radius:8px;">
+
+                    <tr>
+                        <td style="background:#18201d; padding:24px 32px;">
+                            <div style="color:#ffffff; font-size:22px; font-weight:bold;">
+                                Service Desk
+                            </div>
+                            <div style="color:#aebbb4; font-size:14px; margin-top:4px;">
+                                Núcleo de Tecnologia da Informação - NTI
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:32px;">
+                            <div style="color:#159455; font-size:13px; font-weight:bold;">
+                                NOVA INTERAÇÃO
+                            </div>
+
+                            <h2 style="color:#16201b; margin:8px 0 16px;">
+                                {protocolo}
+                            </h2>
+
+                            <p style="color:#445049; font-size:14px;">
+                                Olá, <strong>{destinatario_nome}</strong>.
+                            </p>
+
+                            <p style="color:#445049; font-size:14px;">
+                                Uma nova interação foi registrada no seu chamado.
+                            </p>
+
+                            <table width="100%" cellpadding="8" cellspacing="0"
+                                   style="font-size:14px; color:#445049; margin:20px 0;">
+                                <tr>
+                                    <td><strong>Assunto</strong></td>
+                                    <td>{assunto}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Enviado por</strong></td>
+                                    <td>{autor_nome}</td>
+                                </tr>
+                            </table>
+
+                            <div style="background:#f4f6f5; border-left:4px solid #159455;
+                                        padding:16px; margin:20px 0; color:#445049;
+                                        font-size:14px; line-height:1.5;">
+                                {mensagem}
+                            </div>
+
+                            <table cellpadding="0" cellspacing="0" style="margin-top:28px;">
+                                <tr>
+                                    <td style="background:#159455; border-radius:6px;">
+                                        <a href="{url_chamado}"
+                                           style="display:inline-block; padding:12px 20px;
+                                                  color:#ffffff; text-decoration:none;
+                                                  font-size:14px; font-weight:bold;">
+                                            Ver chamado
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="border-top:1px solid #dce3df; padding:18px 32px;
+                                   color:#7a857f; font-size:12px;">
+                            Mensagem automática do Service Desk NTU.
+                            Não responda a este e-mail.
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+""".strip()
+
+    return texto, html
