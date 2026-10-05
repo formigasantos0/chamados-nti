@@ -1,26 +1,15 @@
 import logging
-
-from app.core.config import settings
-from app.services.email_service import enviar_email
-from app.services.email_templates import (
-    template_chamado_recebido,
-    template_nova_interacao,
-    template_novo_chamado,
-)
-
 from datetime import datetime, timezone
 from uuid import uuid4
-
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
-from app.models.categoria import Categoria
-
-from app.services.sla import calcular_sla_chamado
 
 from app.api.dependencies import get_equipe_nti_atual, get_usuario_atual
+from app.core.config import settings
 from app.db.session import get_db
+from app.models.categoria import Categoria
 from app.models.chamado import Chamado
 from app.models.historico import HistoricoChamado
 from app.models.usuario import Usuario
@@ -32,6 +21,16 @@ from app.schemas.chamado import (
     MensagemCriar,
     MensagemResponse,
 )
+from app.services.email_service import enviar_email
+from app.services.email_templates import (
+    template_chamado_atribuido,
+    template_chamado_recebido,
+    template_nova_interacao,
+    template_novo_chamado,
+    template_status_chamado,
+)
+from app.services.sla import calcular_sla_chamado
+
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +38,7 @@ router = APIRouter(
     prefix="/chamados",
     tags=["Chamados"],
 )
+
 
 # ============================================================
 # CRIAR CHAMADO
@@ -56,7 +56,7 @@ def criar_chamado(
     usuario: Usuario = Depends(get_usuario_atual),
 ):
     prioridade = "normal"
-    
+
     categoria = db.get(Categoria, dados.categoria_id)
 
     if categoria is None or not categoria.ativo:
@@ -66,15 +66,15 @@ def criar_chamado(
         )
 
     chamado = Chamado(
-    protocolo=f"TEMP-{uuid4().hex[:16]}",
-    titulo=dados.titulo.strip(),
-    descricao=dados.descricao.strip(),
-    categoria_id=categoria.id,
-    prioridade=prioridade,
-    status="aberto",
-    solicitante_id=usuario.id,
-    unidade_id=usuario.unidade_id,
-)
+        protocolo=f"TEMP-{uuid4().hex[:16]}",
+        titulo=dados.titulo.strip(),
+        descricao=dados.descricao.strip(),
+        categoria_id=categoria.id,
+        prioridade=prioridade,
+        status="aberto",
+        solicitante_id=usuario.id,
+        unidade_id=usuario.unidade_id,
+    )
 
     db.add(chamado)
     db.flush()
@@ -83,11 +83,11 @@ def criar_chamado(
     chamado.protocolo = f"CH-{ano}-{chamado.id:06d}"
 
     historico = HistoricoChamado(
-    chamado_id=chamado.id,
-    usuario_id=usuario.id,
-    tipo="abertura",
-    descricao="Chamado aberto pelo usuário.",
-)
+        chamado_id=chamado.id,
+        usuario_id=usuario.id,
+        tipo="abertura",
+        descricao="Chamado aberto pelo usuário.",
+    )
 
     db.add(historico)
     db.commit()
@@ -118,6 +118,7 @@ def criar_chamado(
             corpo=corpo_texto,
             html=corpo_html,
         )
+
         corpo_usuario_texto, corpo_usuario_html = template_chamado_recebido(
             protocolo=chamado.protocolo,
             solicitante_nome=chamado.solicitante.nome,
@@ -134,7 +135,6 @@ def criar_chamado(
             html=corpo_usuario_html,
         )
 
-
     except Exception:
         logger.exception(
             "Falha ao enviar notificação do chamado %s",
@@ -142,6 +142,7 @@ def criar_chamado(
         )
 
     return chamado
+
 
 # ============================================================
 # LISTAR CHAMADOS
@@ -166,12 +167,11 @@ def listar_chamados(
     )
 
     # Usuário comum enxerga somente os próprios chamados.
-    # Administrador enxerga todos.
-
+    # Técnico e administrador enxergam todos.
     if usuario.perfil not in {"tecnico", "administrador"}:
         consulta = consulta.where(
             Chamado.solicitante_id == usuario.id
-    )
+        )
 
     chamados = db.scalars(consulta).all()
 
@@ -206,8 +206,11 @@ def listar_chamados(
 
     return resultado
 
-    # Usuário comum enxerga somente os próprios chamados.
-    # Administrador enxerga todos.
+
+# ============================================================
+# CONSULTAR CHAMADO
+# GET /chamados/{chamado_id}
+# ============================================================
 
 @router.get(
     "/{chamado_id}",
@@ -246,6 +249,12 @@ def consultar_chamado(
 
     return chamado
 
+
+# ============================================================
+# ATUALIZAR CHAMADO
+# PATCH /chamados/{chamado_id}
+# ============================================================
+
 @router.patch(
     "/{chamado_id}",
     response_model=ChamadoResponse,
@@ -256,7 +265,6 @@ def atualizar_chamado(
     db: Session = Depends(get_db),
     usuario: Usuario = Depends(get_equipe_nti_atual),
 ):
-
     chamado = db.get(Chamado, chamado_id)
 
     if chamado is None:
@@ -266,6 +274,14 @@ def atualizar_chamado(
         )
 
     historicos = []
+
+    # Guarda o novo responsável somente quando houver
+    # uma atribuição/troca real. Isso impede e-mails duplicados.
+    novo_responsavel = None
+
+    # Guarda somente mudanças de status que devem gerar
+    # notificação para o solicitante após o commit.
+    status_para_notificar = None
 
     # --------------------------------------------------------
     # STATUS
@@ -327,6 +343,13 @@ def atualizar_chamado(
             agora = datetime.now(timezone.utc)
 
             chamado.status = novo_status
+
+            if novo_status in {
+                "aguardando_usuario",
+                "resolvido",
+                "fechado",
+            }:
+                status_para_notificar = novo_status
 
             # Primeiro atendimento é registrado somente uma vez.
             if (
@@ -430,8 +453,7 @@ def atualizar_chamado(
             if (
                 responsavel is None
                 or not responsavel.ativo
-                or responsavel.perfil
-                not in {"tecnico", "administrador"}
+                or responsavel.perfil not in {"tecnico", "administrador"}
             ):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -441,8 +463,11 @@ def atualizar_chamado(
                     ),
                 )
 
+            # Só considera nova atribuição quando o responsável
+            # realmente mudou.
             if responsavel_anterior_id != responsavel.id:
                 chamado.responsavel_id = responsavel.id
+                novo_responsavel = responsavel
 
                 historicos.append(
                     HistoricoChamado(
@@ -456,22 +481,135 @@ def atualizar_chamado(
                     )
                 )
 
-    # Salva a alteração do chamado e o histórico
-    # dentro da mesma transação.
+    # Salva alteração do chamado e histórico
+    # na mesma transação.
     db.add_all(historicos)
     db.commit()
 
+    # Recarrega o chamado com todos os relacionamentos
+    # necessários para resposta e notificações.
     chamado = db.scalar(
         select(Chamado)
         .options(
             selectinload(Chamado.solicitante),
             selectinload(Chamado.unidade),
             selectinload(Chamado.responsavel),
+            selectinload(Chamado.categoria),
         )
         .where(Chamado.id == chamado.id)
     )
 
+    # --------------------------------------------------------
+    # NOTIFICAÇÃO DE ATRIBUIÇÃO
+    # --------------------------------------------------------
+
+    if novo_responsavel is not None:
+        try:
+            corpo_texto, corpo_html = template_chamado_atribuido(
+                protocolo=chamado.protocolo,
+                tecnico_nome=novo_responsavel.nome,
+                solicitante_nome=chamado.solicitante.nome,
+                unidade=chamado.unidade.nome,
+                categoria=chamado.categoria.nome,
+                assunto=chamado.titulo,
+                prioridade=chamado.prioridade,
+                chamado_id=chamado.id,
+                app_url=settings.app_url,
+            )
+
+            enviar_email(
+                destinatario=novo_responsavel.email,
+                assunto=f"[{chamado.protocolo}] Chamado atribuído a você",
+                corpo=corpo_texto,
+                html=corpo_html,
+            )
+
+        except Exception:
+            logger.exception(
+                "Falha ao enviar notificação de atribuição do chamado %s",
+                chamado.protocolo,
+            )
+
+                # --------------------------------------------------------
+    # NOTIFICAÇÃO DE ATRIBUIÇÃO
+    # --------------------------------------------------------
+
+    if novo_responsavel is not None:
+        try:
+            corpo_texto, corpo_html = template_chamado_atribuido(
+                protocolo=chamado.protocolo,
+                tecnico_nome=novo_responsavel.nome,
+                solicitante_nome=chamado.solicitante.nome,
+                unidade=chamado.unidade.nome,
+                categoria=chamado.categoria.nome,
+                assunto=chamado.titulo,
+                prioridade=chamado.prioridade,
+                chamado_id=chamado.id,
+                app_url=settings.app_url,
+            )
+
+            enviar_email(
+                destinatario=novo_responsavel.email,
+                assunto=f"[{chamado.protocolo}] Chamado atribuído a você",
+                corpo=corpo_texto,
+                html=corpo_html,
+            )
+
+        except Exception:
+            logger.exception(
+                "Falha ao enviar notificação de atribuição do chamado %s",
+                chamado.protocolo,
+            )
+
+    # --------------------------------------------------------
+    # NOTIFICAÇÃO DE ALTERAÇÃO DE STATUS
+    # --------------------------------------------------------
+
+    if status_para_notificar is not None:
+        try:
+            corpo_texto, corpo_html = template_status_chamado(
+                protocolo=chamado.protocolo,
+                solicitante_nome=chamado.solicitante.nome,
+                assunto=chamado.titulo,
+                novo_status=status_para_notificar,
+                chamado_id=chamado.id,
+                app_url=settings.app_url,
+            )
+
+            assuntos_status = {
+                "aguardando_usuario": (
+                    f"[{chamado.protocolo}] Aguardando sua resposta"
+                ),
+                "resolvido": (
+                    f"[{chamado.protocolo}] Chamado resolvido"
+                ),
+                "fechado": (
+                    f"[{chamado.protocolo}] Chamado fechado"
+                ),
+            }
+
+            enviar_email(
+                destinatario=chamado.solicitante.email,
+                assunto=assuntos_status[status_para_notificar],
+                corpo=corpo_texto,
+                html=corpo_html,
+            )
+
+        except Exception:
+            logger.exception(
+                "Falha ao enviar notificação de status do chamado %s",
+                chamado.protocolo,
+            )
+
     return chamado
+
+    return chamado
+
+
+# ============================================================
+# ADICIONAR MENSAGEM / INTERAÇÃO
+# POST /chamados/{chamado_id}/mensagens
+# ============================================================
 
 @router.post(
     "/{chamado_id}/mensagens",
@@ -563,6 +701,12 @@ def adicionar_mensagem(
 
     return mensagem
 
+
+# ============================================================
+# HISTÓRICO
+# GET /chamados/{chamado_id}/historico
+# ============================================================
+
 @router.get(
     "/{chamado_id}/historico",
     response_model=list[HistoricoResponse],
@@ -585,9 +729,9 @@ def listar_historico_chamado(
         and chamado.solicitante_id != usuario.id
     ):
         raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Você não possui permissão para acessar este chamado",
-    )
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você não possui permissão para acessar este chamado",
+        )
 
     historicos = db.scalars(
         select(HistoricoChamado)
